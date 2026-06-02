@@ -1,0 +1,122 @@
+/*
+   ─────────────────────────────────────────────────────────────────────────────
+   Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+   Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+   CONFIDENTIAL AND PROPRIETARY
+
+   This source file is the original work of Geoffrey Oketwangwu and contains
+   confidential, proprietary information protected under copyright and trade-
+   secret law. No part may be reproduced, distributed, modified, reverse-
+   engineered, or used — in source or compiled form — without the prior
+   written permission of the author.
+
+   All rights reserved.
+*/
+/*
+ * Sente Rails — canonical theme tokens for platform-www pages.
+ *
+ * Two render layers share this design system:
+ *   • The workbench (TanStack Start SSR, served from :3001). Its own
+ *     copy of the tokens lives in frontend/src/styles.css where Vite
+ *     and Tailwind v4 process them.
+ *   • The platform-www pages (/login, /clerk, /supervisor, /verify/*,
+ *     served from :8001 by gunicorn). They consume THIS file.
+ *
+ * KEEP IN SYNC. The :root and .dark blocks below MUST match the same
+ * blocks in frontend/src/styles.css. Token drift will surface as
+ * theme discontinuity when a user bounces between layers — e.g. dark
+ * card on the workbench, white card on /login.
+ *
+ * Pattern for two-layer theming:
+ *   1. Both layers read the same localStorage key  ("sente-theme").
+ *   2. Both layers honour the same boot script (sets the .dark class
+ *      on <html> before paint, falling back to prefers-color-scheme).
+ *   3. Both layers reference the same token names via CSS variables.
+ *
+ * The boot script for platform-www pages lives inline in each page's
+ * <head> for FOUC prevention — it cannot be in a stylesheet.
+ *
+ * Served at /assets/sente_rails/css/theme.css when this app is
+ * installed (the platform exposes ``public/`` as ``/assets/<app>/``).
+ */
+
+/* ─── Fonts ─────────────────────────────────────────────────────────
+ * Imported here so any platform-www page that includes this file gets
+ * the typography for free. The workbench loads the same families via
+ * its own preconnect + link tags in __root.tsx.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap');
+
+:root {
+  --radius: 0.5rem;
+
+  /* Surfaces */
+  --background: oklch(0.985 0.002 250);     /* near-white slate */
+  --foreground: oklch(0.18 0.04 260);        /* deep navy ink */
+  --surface: oklch(1 0 0);
+  --surface-muted: oklch(0.965 0.005 250);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.04 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.04 260);
+
+  /* Brand — civic navy #0a2540 */
+  --primary: oklch(0.27 0.06 258);
+  --primary-foreground: oklch(0.985 0.002 250);
+
+  --secondary: oklch(0.955 0.008 250);
+  --secondary-foreground: oklch(0.22 0.05 260);
+
+  --muted: oklch(0.955 0.008 250);
+  --muted-foreground: oklch(0.48 0.02 260);
+
+  --accent: oklch(0.93 0.02 260);
+  --accent-foreground: oklch(0.22 0.05 260);
+
+  /* Uganda flag accents */
+  --gold: oklch(0.86 0.17 95);               /* #fcdc04 */
+  --gold-foreground: oklch(0.18 0.04 260);
+  --destructive: oklch(0.55 0.22 27);        /* #d90000 */
+  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-soft: oklch(0.97 0.02 25);
+
+  /* Status */
+  --success: oklch(0.6 0.14 152);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.2 0.04 260);
+  --info: oklch(0.6 0.12 240);
+  --info-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.9 0.01 255);
+  --input: oklch(0.9 0.01 255);
+  --ring: oklch(0.55 0.08 258);
+
+  --font-display: "Outfit",  ui-sans-serif, system-ui, sans-serif;
+  --font-sans:    "Figtree", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --background: oklch(0.15 0.03 260);
+  --foreground: oklch(0.96 0.005 250);
+  --surface: oklch(0.19 0.04 260);
+  --surface-muted: oklch(0.22 0.04 260);
+  --card: oklch(0.19 0.04 260);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.19 0.04 260);
+  --popover-foreground: oklch(0.96 0.005 250);
+  --primary: oklch(0.86 0.17 95);
+  --primary-foreground: oklch(0.18 0.04 260);
+  --secondary: oklch(0.25 0.04 260);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.25 0.04 260);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --accent: oklch(0.3 0.05 260);
+  --accent-foreground: oklch(0.96 0.005 250);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.6 0.08 258);
+  --destructive-soft: oklch(0.3 0.08 25);
+}

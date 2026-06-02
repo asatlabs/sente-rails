@@ -1,0 +1,415 @@
+<!--
+─────────────────────────────────────────────────────────────────────────────
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+CONFIDENTIAL AND PROPRIETARY
+
+This source file is the original work of Geoffrey Oketwangwu and contains
+confidential, proprietary information protected under copyright and trade-
+secret law. No part may be reproduced, distributed, modified, reverse-
+engineered, or used — in source or compiled form — without the prior
+written permission of the author.
+
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="robots" content="noindex">
+
+<!--
+  Theme boot — read the shared theme preference BEFORE any HTML renders.
+  Same key + same fallback chain as the workbench's boot script in
+  frontend/src/routes/__root.tsx. Prevents flash-of-wrong-theme when a
+  user toggles dark on the workbench and bounces over here.
+-->
+<script>(function(){try{var t=localStorage.getItem('sente-theme');var d=t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(d)document.documentElement.classList.add('dark');}catch(e){}})();</script>
+
+<!-- Canonical token source — see sente_rails/public/css/theme.css. -->
+<link rel="stylesheet" href="/assets/sente_rails/css/theme.css">
+
+<style>
+  /* Layout-only styles. Token definitions live in the shared theme.css. */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    background: var(--background);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .flag-bar { height: 3px; display: flex; }
+  .flag-bar > span { flex: 1; }
+  .flag-bar .black  { background: #000; }
+  .flag-bar .yellow { background: var(--gold); }
+  .flag-bar .red    { background: var(--destructive); }
+  /* Dark mode: lift the black band to a charcoal so it stays visible
+     on the dark background — matches the workbench's `.gov-accent-bar`
+     dark variant. */
+  .dark .flag-bar .black { background: oklch(0.4 0.02 260); }
+
+  .page {
+    min-height: calc(100vh - 3px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 1rem;
+    position: relative;
+  }
+  .wrap { width: 100%; max-width: 26rem; }
+
+  .theme-toggle {
+    position: absolute;
+    top: 1.25rem; right: 1.25rem;
+    width: 2.25rem; height: 2.25rem;
+    border-radius: 9999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted-foreground);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+  }
+  .theme-toggle:hover {
+    color: var(--foreground);
+    background: var(--surface-muted);
+  }
+  .theme-toggle svg { width: 1rem; height: 1rem; }
+  .theme-toggle .sun { display: none; }
+  .theme-toggle .moon { display: block; }
+  .dark .theme-toggle .sun { display: block; }
+  .dark .theme-toggle .moon { display: none; }
+
+  .brand {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 0.625rem;
+    margin-bottom: 2rem;
+  }
+  .brand-badge {
+    width: 3rem; height: 3rem; border-radius: 9999px;
+    background: color-mix(in oklch, var(--primary) 8%, transparent);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 600; font-size: 0.9375rem; letter-spacing: 0.06em;
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-size: 1rem; font-weight: 600;
+    letter-spacing: -0.005em;
+    color: var(--foreground);
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04),
+                0 4px 12px -8px rgba(15, 23, 42, 0.08);
+    padding: 1.5rem;
+  }
+  .dark .card {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20),
+                0 8px 24px -12px rgba(0, 0, 0, 0.4);
+  }
+
+  .eyebrow {
+    font-size: 0.6875rem; font-weight: 600;
+    color: var(--muted-foreground);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-size: 1.5rem; font-weight: 600;
+    margin: 0 0 0.5rem;
+    letter-spacing: -0.015em;
+    color: var(--foreground);
+  }
+  .sub {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin: 0 0 1.5rem;
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block; font-size: 0.8125rem; font-weight: 500;
+    color: var(--foreground);
+    margin-bottom: 0.4rem;
+  }
+  .field input {
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--foreground);
+    background: var(--surface);
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--primary) 18%, transparent);
+  }
+  .field-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .field-row a {
+    font-size: 0.8125rem;
+    color: var(--primary); font-weight: 500;
+  }
+
+  .alert {
+    display: none;
+    gap: 0.5rem; align-items: flex-start;
+    padding: 0.625rem 0.75rem;
+    background: var(--destructive-soft);
+    color: var(--destructive);
+    border: 1px solid color-mix(in oklch, var(--destructive) 30%, transparent);
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    margin-bottom: 1rem;
+  }
+  .alert.show { display: flex; }
+  .alert svg { flex: none; margin-top: 0.125rem; }
+  .dark .alert { color: oklch(0.85 0.08 25); }
+
+  .submit {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    border: none;
+    border-radius: 0.5rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s ease, transform 0.06s ease;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  }
+  .submit:hover:not(:disabled) {
+    background: color-mix(in oklch, var(--primary) 88%, black);
+  }
+  .submit:disabled { opacity: 0.55; cursor: not-allowed; }
+  .submit .spinner {
+    width: 0.875rem; height: 0.875rem;
+    border: 2px solid color-mix(in oklch, var(--primary-foreground) 40%, transparent);
+    border-top-color: var(--primary-foreground);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    display: none;
+  }
+  .submit.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .helper {
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    text-align: center;
+  }
+
+  .footer {
+    margin-top: 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 1rem;
+    font-size: 0.6875rem;
+    color: var(--muted-foreground);
+  }
+  .footer .links { display: flex; gap: 0.875rem; }
+  .footer a { color: var(--muted-foreground); }
+  .footer a:hover { color: var(--foreground); }
+
+  @media (max-width: 420px) {
+    .page { padding: 1.5rem 1rem; }
+    .brand { margin-bottom: 1.5rem; }
+    .card { padding: 1.25rem; }
+    .footer { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .theme-toggle { top: 0.75rem; right: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flag-bar"><span class="black"></span><span class="yellow"></span><span class="red"></span></div>
+
+<div class="page">
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/>
+    </svg>
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4"/>
+      <path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>
+    </svg>
+  </button>
+
+  <div class="wrap">
+
+    <a class="brand" href="/" aria-label="Sente Rails home" style="text-decoration:none;">
+      <div class="brand-badge">SR</div>
+      <div class="brand-name">Sente Rails</div>
+    </a>
+
+    <div class="card">
+      <div class="eyebrow">Operator sign-in</div>
+      <h1 class="title">Welcome back</h1>
+      <p class="sub">Email + password. You'll land on the surface that matches your role.</p>
+
+      <div id="alert" class="alert" role="alert">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span id="alert-msg"></span>
+      </div>
+
+      <form id="login-form" autocomplete="on" novalidate>
+        <div class="field">
+          <label for="usr">Email</label>
+          <input id="usr" name="usr" type="email" autocomplete="username" required autofocus>
+        </div>
+        <div class="field">
+          <div class="field-row">
+            <label for="pwd">Password</label>
+            <a href="/update-password">Forgot?</a>
+          </div>
+          <input id="pwd" name="pwd" type="password" autocomplete="current-password" required>
+        </div>
+
+        <button id="submit" class="submit" type="submit">
+          <span class="spinner"></span>
+          <span class="label">Sign in</span>
+        </button>
+      </form>
+
+      <p class="helper">
+        Need an operator account? Ask your MDA Admin to provision you.
+      </p>
+    </div>
+
+    <div class="footer">
+      <span>Apache 2.0 · ASAT LABS · Gulu, Uganda</span>
+      <div class="links">
+        <a href="/">Home</a>
+        <a href="https://github.com/asatlabs/sente-rails" target="_blank" rel="noopener">GitHub</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  const form = document.getElementById('login-form');
+  const alertBox = document.getElementById('alert');
+  const alertMsg = document.getElementById('alert-msg');
+  const submitBtn = document.getElementById('submit');
+  const themeBtn = document.getElementById('theme-toggle');
+  const defaultHome = {{ default_home | tojson }};
+
+  // ── Theme toggle ─────────────────────────────────────────────────
+  // Storage key matches frontend/src/lib/theme.ts STORAGE_KEY so a
+  // toggle here persists across to /ops, /dashboard, /work, /docs/*.
+  const THEME_KEY = 'sente-theme';
+  themeBtn.addEventListener('click', function() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const next = isDark ? 'light' : 'dark';
+    document.documentElement.classList.toggle('dark', next === 'dark');
+    try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  });
+
+  // ── Auth flow ────────────────────────────────────────────────────
+  function showError(msg) {
+    alertMsg.textContent = msg;
+    alertBox.classList.add('show');
+  }
+  function clearError() {
+    alertMsg.textContent = '';
+    alertBox.classList.remove('show');
+  }
+
+  form.addEventListener('submit', async function(ev) {
+    ev.preventDefault();
+    clearError();
+
+    const usr = document.getElementById('usr').value.trim();
+    const pwd = document.getElementById('pwd').value;
+    if (!usr || !pwd) {
+      showError('Enter your email and password to sign in.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+
+    try {
+      const body = new URLSearchParams({ usr: usr, pwd: pwd });
+      const resp = await fetch('/api/method/login', {
+        method: 'POST',
+        body: body,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        credentials: 'same-origin',
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => '');
+        let msg = 'Invalid email or password. Please try again.';
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed && parsed.message) msg = parsed.message;
+        } catch (e) {}
+        showError(msg);
+        return;
+      }
+
+      // Successful login. The platform's set_user_info() runs after our
+      // sente_rails.auth.on_login hook and overwrites home_page with
+      // /app or /app/home for System Users — which is blocked at our
+      // nginx edge. Ignore the response's home_page and ask the
+      // server for the role-correct route via a dedicated endpoint.
+      let target = defaultHome;
+      try {
+        const routeResp = await fetch(
+          '/api/method/sente_rails.auth.get_post_login_route',
+          { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } },
+        );
+        if (routeResp.ok) {
+          const routeData = await routeResp.json();
+          if (routeData && routeData.message && routeData.message.route) {
+            target = routeData.message.route;
+          }
+        }
+      } catch (e) {
+        // Network blip during role lookup — fall through to defaultHome.
+      }
+
+      // ?redirect-to= URL param wins (e.g. came from /clerk while logged out).
+      const params = new URLSearchParams(window.location.search);
+      const redirect = params.get('redirect-to');
+      if (redirect && redirect.startsWith('/')) target = redirect;
+
+      window.location.href = target;
+    } catch (err) {
+      showError('Could not reach the server. Please check your connection and try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

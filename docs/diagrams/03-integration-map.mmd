@@ -1,0 +1,101 @@
+%% Sente Rails - Figure 3: Integration map
+%% Referenced in PROGRAM_BRIEF.md section 2.4
+%% Render: mmdc -i 03-integration-map.mmd -o 03-integration-map.svg -b transparent
+
+flowchart LR
+  subgraph CITIZENS["Citizens"]
+    direction TB
+    C1["Counter walk-in"]
+    C2["Mobile portal"]
+    C3["Receipt QR scan"]
+  end
+
+  subgraph RAIL["Sente Rails (the rail)"]
+    direction TB
+    CLERK["clerk<br/>counter app"]
+    PORTAL["portal<br/>citizen self-service"]
+    VERIFY["verify<br/>public receipt verifier"]
+    WORKBENCH["Workbench<br/>API site"]
+    API_LAYER["v1 API surface<br/>22 endpoints"]
+    SUPERVISOR["supervisor<br/>shift oversight"]
+  end
+
+  subgraph AGG["Aggregators (licensed PSPs)"]
+    direction TB
+    MTN["MTN MoMo<br/>(sandbox live)"]
+    AIRTEL["Airtel Money<br/>(sandbox pending)"]
+    PESAPAL["Pesapal<br/>(planned)"]
+    CARD["Card networks"]
+    BANK["Bank settlement"]
+  end
+
+  subgraph MDA_A["Mode A: Sente is the system"]
+    direction TB
+    GULU["Gulu City"]
+    LIRA["Lira City"]
+    MORECITIES["Mbarara, Jinja, Mbale,<br/>Fort Portal, Masaka,<br/>Hoima, Arua..."]
+    SUBCNTY["District + Sub-County tier"]
+  end
+
+  subgraph MDA_B["Mode B: we call their APIs"]
+    direction TB
+    URA["URA + EFRIS"]
+    NIRA["NIRA (via UGHub)"]
+    URSB["URSB"]
+    NSSF["NSSF"]
+    UNEB["UNEB"]
+    OTHERSB["+ 20 more on roadmap"]
+  end
+
+  subgraph MDA_C["Mode C: oversight reads"]
+    direction TB
+    OAG_OUT["OAG"]
+    MOFPED["MoFPED Treasury"]
+    UBOS["UBOS"]
+    MOLG_OUT["MoLG"]
+  end
+
+  C1 --> CLERK
+  C2 --> PORTAL
+  C3 --> VERIFY
+  CLERK --> API_LAYER
+  PORTAL --> API_LAYER
+  VERIFY --> API_LAYER
+  WORKBENCH -.->|public read| API_LAYER
+  SUPERVISOR --> API_LAYER
+
+  API_LAYER ==> MTN
+  API_LAYER ==> AIRTEL
+  API_LAYER ==> PESAPAL
+  API_LAYER ==> CARD
+  API_LAYER ==> BANK
+
+  API_LAYER <==> URA
+  API_LAYER <==> NIRA
+  API_LAYER <==> URSB
+  API_LAYER <==> NSSF
+  API_LAYER <==> UNEB
+
+  GULU <==> API_LAYER
+  LIRA <==> API_LAYER
+  MORECITIES <==> API_LAYER
+  SUBCNTY <==> API_LAYER
+
+  API_LAYER -.->|scoped reads| OAG_OUT
+  API_LAYER -.->|scoped reads| MOFPED
+  API_LAYER -.->|scoped reads| UBOS
+  API_LAYER -.->|scoped reads| MOLG_OUT
+
+  classDef citizen fill:#fef9c3,stroke:#ca8a04,color:#713f12
+  classDef rail fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+  classDef agg fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+  classDef modea fill:#dcfce7,stroke:#16a34a,color:#14532d
+  classDef modeb fill:#e0e7ff,stroke:#4f46e5,color:#312e81
+  classDef modec fill:#f3e8ff,stroke:#9333ea,color:#581c87
+
+  class C1,C2,C3 citizen
+  class CLERK,PORTAL,VERIFY,WORKBENCH,API_LAYER,SUPERVISOR rail
+  class MTN,AIRTEL,PESAPAL,CARD,BANK agg
+  class GULU,LIRA,MORECITIES,SUBCNTY modea
+  class URA,NIRA,URSB,NSSF,UNEB,OTHERSB modeb
+  class OAG_OUT,MOFPED,UBOS,MOLG_OUT modec

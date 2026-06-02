@@ -1,0 +1,432 @@
+<!--
+─────────────────────────────────────────────────────────────────────────────
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+CONFIDENTIAL AND PROPRIETARY
+
+This source file is the original work of Geoffrey Oketwangwu and contains
+confidential, proprietary information protected under copyright and trade-
+secret law. No part may be reproduced, distributed, modified, reverse-
+engineered, or used — in source or compiled form — without the prior
+written permission of the author.
+
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-900: #1e3a8a;
+    --primary-700: #1d4ed8;
+    --primary-600: #2563eb;
+    --primary-50: #eff6ff;
+    --slate-900: #0f172a;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50: #f8fafc;
+    --success: #059669;
+    --success-50: #ecfdf5;
+    --warning: #f59e0b;
+    --warning-50: #fffbeb;
+    --danger: #dc2626;
+    --danger-50: #fef2f2;
+    --flag-yellow: #FCDC04;
+    --flag-red: #D90000;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--slate-900);
+    background: var(--slate-50);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .flag-bar { height: 4px; display: flex; }
+  .flag-bar > span { flex: 1; }
+  .flag-bar .black { background: #000; }
+  .flag-bar .yellow { background: var(--flag-yellow); }
+  .flag-bar .red { background: var(--flag-red); }
+
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--slate-200);
+    padding: 14px 20px;
+  }
+  .topbar-inner {
+    max-width: 600px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--slate-900); text-decoration: none; }
+  .brand:hover { text-decoration: none; }
+  .brand-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-600) 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11px; letter-spacing: 0.06em;
+  }
+  .brand-name { font-weight: 700; font-size: 15px; }
+  .topbar-help { font-size: 12px; color: var(--slate-500); }
+
+  .wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 32px 20px 48px;
+  }
+
+  /* Verified status banner */
+  .verdict {
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 18px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .verdict.verified {
+    background: var(--success-50);
+    border: 1.5px solid #a7f3d0;
+  }
+  .verdict.pending {
+    background: var(--warning-50);
+    border: 1.5px solid #fde68a;
+  }
+  .verdict.failed, .verdict.notfound {
+    background: var(--danger-50);
+    border: 1.5px solid #fecaca;
+  }
+  .verdict-icon {
+    flex: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 22px; font-weight: 700;
+  }
+  .verdict.verified .verdict-icon { background: var(--success); }
+  .verdict.pending .verdict-icon { background: var(--warning); }
+  .verdict.failed .verdict-icon,
+  .verdict.notfound .verdict-icon { background: var(--danger); }
+  .verdict-text { flex: 1; }
+  .verdict-title { font-size: 18px; font-weight: 700; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .verdict.verified .verdict-title { color: #065f46; }
+  .verdict.pending .verdict-title { color: #92400e; }
+  .verdict.failed .verdict-title,
+  .verdict.notfound .verdict-title { color: #991b1b; }
+  .verdict-sub { font-size: 13px; color: var(--slate-700); margin: 0; }
+  .verdict-ref {
+    font-family: 'JetBrains Mono', monospace;
+    background: white; padding: 2px 6px; border-radius: 4px;
+    font-size: 12px; color: var(--slate-700);
+    border: 1px solid var(--slate-200);
+  }
+
+  /* Receipt card */
+  .receipt {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  }
+  .receipt-head {
+    background: linear-gradient(180deg, var(--slate-50) 0%, white 100%);
+    padding: 22px 24px 16px;
+    border-bottom: 1px dashed var(--slate-200);
+  }
+  .receipt-mda {
+    font-size: 11px; font-weight: 700;
+    color: var(--primary-700);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .receipt-mda.multi { color: var(--slate-500); }
+  .receipt-amount {
+    font-size: 30px; font-weight: 800;
+    color: var(--slate-900);
+    margin: 4px 0 2px;
+    letter-spacing: -0.02em;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .receipt-currency { color: var(--slate-500); font-size: 14px; font-weight: 600; }
+
+  .receipt-rows { padding: 8px 24px; }
+  .row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--slate-200);
+    font-size: 14px;
+  }
+  .row:last-child { border-bottom: none; }
+  .row-label { color: var(--slate-500); }
+  .row-value { color: var(--slate-900); font-weight: 500; text-align: right; }
+  .row-value.mono { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; word-break: break-all; }
+
+  /* Lines / splits */
+  .section-title {
+    font-size: 11px; font-weight: 700;
+    color: var(--slate-500);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 16px 24px 6px;
+    border-top: 1px dashed var(--slate-200);
+  }
+  .line-rows { padding: 0 24px 12px; }
+  .line {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 8px 0;
+    font-size: 13px;
+  }
+  .line-name { color: var(--slate-700); flex: 1; padding-right: 12px; }
+  .line-mda { font-size: 11px; color: var(--slate-500); display: block; margin-top: 1px; }
+  .line-amount { font-family: 'JetBrains Mono', monospace; color: var(--slate-900); font-weight: 600; white-space: nowrap; }
+
+  /* Trust callout */
+  .trust {
+    margin-top: 18px;
+    padding: 18px 20px;
+    background: var(--primary-50);
+    border-radius: 12px;
+    font-size: 13px; color: var(--primary-900);
+  }
+  .trust strong { display: block; margin-bottom: 4px; color: var(--primary-900); }
+  .trust p { margin: 0; line-height: 1.55; }
+  .trust .footnote { font-size: 11px; color: var(--slate-600); margin-top: 8px; }
+
+  /* Footer */
+  .footer-note {
+    text-align: center; font-size: 12px; color: var(--slate-500);
+    margin-top: 28px;
+  }
+  .footer-note a { color: var(--primary-600); }
+
+  /* Not-found state */
+  .notfound-body { padding: 24px; }
+  .notfound-body p { margin: 0 0 10px; font-size: 14px; color: var(--slate-700); }
+  .notfound-body code { background: var(--slate-100); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+
+  /* Receipt-entry form (the default page) */
+  .entry-intro { text-align: center; margin-bottom: 20px; }
+  .entry-title { font-size: 22px; font-weight: 800; color: var(--slate-900); margin: 4px 0 6px; letter-spacing: -0.02em; }
+  .entry-subtitle { font-size: 14px; color: var(--slate-600); margin: 0; }
+  .entry-card { padding: 22px 24px 20px; }
+  .entry-label { display: block; font-size: 12px; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+  .entry-row { display: flex; gap: 10px; }
+  .entry-input {
+    flex: 1; min-width: 0;
+    font-family: 'JetBrains Mono', monospace; font-size: 15px;
+    padding: 12px 14px; border: 1.5px solid var(--slate-300); border-radius: 10px;
+    color: var(--slate-900); background: white; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .entry-input::placeholder { color: var(--slate-300); }
+  .entry-input:focus { border-color: var(--primary-600); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+  .entry-btn {
+    flex: none; font-size: 15px; font-weight: 700; color: white;
+    background: var(--primary-700); border: none; border-radius: 10px;
+    padding: 12px 22px; cursor: pointer; transition: background .15s;
+  }
+  .entry-btn:hover { background: var(--primary-900); }
+  .entry-hint { font-size: 12.5px; color: var(--slate-500); margin: 12px 0 0; }
+
+  @media (max-width: 480px) {
+    .wrap { padding: 20px 16px 40px; }
+    .verdict { flex-direction: column; gap: 10px; padding: 18px; }
+    .verdict-icon { width: 36px; height: 36px; font-size: 18px; }
+    .receipt-amount { font-size: 26px; }
+    .entry-row { flex-direction: column; }
+    .entry-btn { padding: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flag-bar"><span class="black"></span><span class="yellow"></span><span class="red"></span></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <div class="brand-logo">SR</div>
+      <div class="brand-name">Sente Rails</div>
+    </a>
+    <div class="topbar-help">Receipt verifier</div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  {% if not_found %}
+    <div class="verdict notfound">
+      <div class="verdict-icon">!</div>
+      <div class="verdict-text">
+        <h1 class="verdict-title">Receipt not on file</h1>
+        <p class="verdict-sub">
+          We could not find a receipt matching
+          {% if reference %}<span class="verdict-ref">{{ reference }}</span>{% else %}the reference you visited{% endif %}.
+        </p>
+      </div>
+    </div>
+    <div class="receipt">
+      <div class="notfound-body">
+        <p>Three things could have caused this:</p>
+        <p>1. <strong>The reference is mistyped.</strong> Re-scan the QR code on your printed receipt — references look like <code>PI-2026-05-000123</code>.</p>
+        <p>2. <strong>The receipt is from a different system.</strong> Sente Rails only verifies receipts issued by MDAs running on this rail. If your receipt is from another government system, ask the issuing office to verify it directly.</p>
+        <p>3. <strong>The receipt is forged.</strong> If you have reason to suspect this, take the receipt to the MDA that issued it and ask them to confirm — they have the same record we do.</p>
+      </div>
+    </div>
+
+  {% endif %}
+
+  {% if show_form %}
+    {% if not not_found %}
+    <div class="entry-intro">
+      <h1 class="entry-title">Verify a government receipt</h1>
+      <p class="entry-subtitle">Confirm that a receipt issued through Sente Rails is genuine — no account needed.</p>
+    </div>
+    {% endif %}
+    <div class="receipt entry-card">
+      <form class="verify-form" action="/verify" method="get" onsubmit="return goVerify(event)">
+        <label class="entry-label" for="ref">{% if not_found %}Check another reference{% else %}Receipt reference{% endif %}</label>
+        <div class="entry-row">
+          <input id="ref" name="name" class="entry-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" autofocus
+                 placeholder="PI-2026-05-000123" value="{{ reference or '' }}">
+          <button type="submit" class="entry-btn">Verify</button>
+        </div>
+        <p class="entry-hint">Scan the QR code on your printed receipt, or type the reference printed on it.</p>
+      </form>
+    </div>
+  {% endif %}
+
+  {% if summary %}
+
+    {% if summary.verified %}
+      <div class="verdict verified">
+        <div class="verdict-icon">✓</div>
+        <div class="verdict-text">
+          <h1 class="verdict-title">Verified receipt</h1>
+          <p class="verdict-sub">This receipt is on file with the MDA. The payment has been confirmed.</p>
+        </div>
+      </div>
+    {% elif summary.status == "Pending" or summary.status == "Sent" %}
+      <div class="verdict pending">
+        <div class="verdict-icon">⋯</div>
+        <div class="verdict-text">
+          <h1 class="verdict-title">Awaiting confirmation</h1>
+          <p class="verdict-sub">This receipt has been issued but the aggregator has not yet confirmed settlement. Re-scan in a few minutes.</p>
+        </div>
+      </div>
+    {% elif summary.status == "Failed" %}
+      <div class="verdict failed">
+        <div class="verdict-icon">✕</div>
+        <div class="verdict-text">
+          <h1 class="verdict-title">Payment failed</h1>
+          <p class="verdict-sub">The aggregator reported this payment as failed. Please contact the issuing MDA.</p>
+        </div>
+      </div>
+    {% else %}
+      <div class="verdict pending">
+        <div class="verdict-icon">?</div>
+        <div class="verdict-text">
+          <h1 class="verdict-title">Status: {{ summary.status }}</h1>
+          <p class="verdict-sub">This receipt is on file. Current status is shown above.</p>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="receipt">
+      <div class="receipt-head">
+        {% if summary.is_multi_mda %}
+          <div class="receipt-mda multi">Multi-MDA receipt</div>
+        {% elif summary.primary_mda %}
+          <div class="receipt-mda">{{ summary.primary_mda }}</div>
+        {% endif %}
+        <div class="receipt-amount">{{ "{:,.0f}".format(summary.amount) }} <span class="receipt-currency">{{ summary.currency }}</span></div>
+      </div>
+
+      <div class="receipt-rows">
+        {% if summary.citizen_display_name %}
+          <div class="row"><span class="row-label">Citizen</span><span class="row-value">{{ summary.citizen_display_name }}</span></div>
+        {% endif %}
+        {% if summary.confirmed_at %}
+          <div class="row"><span class="row-label">Date</span><span class="row-value">{{ summary.confirmed_at[:10] }} · {{ summary.confirmed_at[11:16] }} EAT</span></div>
+        {% endif %}
+        {% if summary.channel %}
+          <div class="row"><span class="row-label">Channel</span><span class="row-value">{{ summary.channel }}</span></div>
+        {% endif %}
+        <div class="row"><span class="row-label">Reference</span><span class="row-value mono">{{ summary.reference }}</span></div>
+        {% if summary.aggregator_reference %}
+          <div class="row"><span class="row-label">Aggregator ref</span><span class="row-value mono">{{ summary.aggregator_reference }}</span></div>
+        {% endif %}
+      </div>
+
+      {% if summary.lines %}
+        <div class="section-title">Items</div>
+        <div class="line-rows">
+          {% for line in summary.lines %}
+            <div class="line">
+              <span class="line-name">
+                {{ line.service_name }}
+                {% if summary.is_multi_mda and line.mda_name %}<span class="line-mda">{{ line.mda_name }}</span>{% endif %}
+              </span>
+              <span class="line-amount">{{ "{:,.0f}".format(line.amount) }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if summary.splits and summary.is_multi_mda %}
+        <div class="section-title">Aggregator split</div>
+        <div class="line-rows">
+          {% for split in summary.splits %}
+            <div class="line">
+              <span class="line-name">{{ split.mda_name }}</span>
+              <span class="line-amount">{{ "{:,.0f}".format(split.amount) }}</span>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if summary.verified %}
+      <div class="trust">
+        <strong>How does this verification work?</strong>
+        <p>The MDA issued this receipt to Sente Rails the moment the aggregator confirmed your payment. The same record sits in the MDA's audit log. If anyone alters either copy, the two would no longer match — and any officer would know.</p>
+        <p class="footnote">Sente Rails never holds public funds. The aggregator settles directly to each MDA's collection account under PFMA §43.</p>
+      </div>
+    {% endif %}
+
+  {% endif %}
+
+  <div class="footer-note">
+    Sente Rails · ASAT LABS · Apache 2.0 · <a href="/">sente-rails.space</a>
+  </div>
+
+</main>
+
+<script>
+  // Progressive enhancement: turn the entry form into a clean
+  // /verify/<reference> URL (the same shape the printed QR encodes). The
+  // form still works without JavaScript via its GET action on /verify.
+  function goVerify(e) {
+    var input = document.getElementById('ref');
+    var v = (input && input.value ? input.value : '').trim();
+    e.preventDefault();
+    if (!v) { if (input) input.focus(); return false; }
+    window.location.href = '/verify/' + encodeURIComponent(v);
+    return false;
+  }
+</script>
+
+</body>
+</html>

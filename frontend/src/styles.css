@@ -1,0 +1,231 @@
+/*
+   ─────────────────────────────────────────────────────────────────────────────
+   Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+   Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+   CONFIDENTIAL AND PROPRIETARY
+
+   This source file is the original work of Geoffrey Oketwangwu and contains
+   confidential, proprietary information protected under copyright and trade-
+   secret law. No part may be reproduced, distributed, modified, reverse-
+   engineered, or used — in source or compiled form — without the prior
+   written permission of the author.
+
+   All rights reserved.
+*/
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Sente Rails — Uganda Government API Workbench
+ * Palette: Uganda Civic (navy base, gold/red flag accents)
+ * Type: Outfit (headings) + Figtree (body) — accessible, public-sector
+ */
+
+@theme inline {
+  --font-sans: "Figtree", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+ * Token blocks below are duplicated in sente_rails/public/css/theme.css
+ * which is served to the platform-www pages (/login, /clerk, /verify, …)
+ * so dark mode + brand stay in sync across the SPA / platform-www
+ * boundary. When changing any :root or .dark variable here, update the
+ * same block in theme.css. Both layers read the localStorage key
+ * `sente-theme` and apply the `.dark` class on <html>.
+ */
+:root {
+  --radius: 0.5rem;
+
+  /* Surfaces */
+  --background: oklch(0.985 0.002 250);     /* near-white slate */
+  --foreground: oklch(0.18 0.04 260);        /* deep navy ink */
+  --surface: oklch(1 0 0);
+  --surface-muted: oklch(0.965 0.005 250);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0.04 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0.04 260);
+
+  /* Brand — civic navy #0a2540 */
+  --primary: oklch(0.27 0.06 258);
+  --primary-foreground: oklch(0.985 0.002 250);
+
+  --secondary: oklch(0.955 0.008 250);
+  --secondary-foreground: oklch(0.22 0.05 260);
+
+  --muted: oklch(0.955 0.008 250);
+  --muted-foreground: oklch(0.48 0.02 260);
+
+  --accent: oklch(0.93 0.02 260);
+  --accent-foreground: oklch(0.22 0.05 260);
+
+  /* Uganda flag accents */
+  --gold: oklch(0.86 0.17 95);               /* #fcdc04 */
+  --gold-foreground: oklch(0.18 0.04 260);
+  --destructive: oklch(0.55 0.22 27);        /* #d90000 */
+  --destructive-foreground: oklch(0.99 0 0);
+
+  /* Status */
+  --success: oklch(0.6 0.14 152);
+  --success-foreground: oklch(0.99 0 0);
+  --warning: oklch(0.78 0.15 75);
+  --warning-foreground: oklch(0.2 0.04 260);
+  --info: oklch(0.6 0.12 240);
+  --info-foreground: oklch(0.99 0 0);
+
+  --border: oklch(0.9 0.01 255);
+  --input: oklch(0.9 0.01 255);
+  --ring: oklch(0.55 0.08 258);
+
+  --chart-1: oklch(0.45 0.14 258);
+  --chart-2: oklch(0.7 0.14 152);
+  --chart-3: oklch(0.78 0.16 75);
+  --chart-4: oklch(0.55 0.22 27);
+  --chart-5: oklch(0.6 0.12 240);
+
+  /* Sidebar — deep navy, gold active */
+  --sidebar: oklch(0.21 0.05 260);
+  --sidebar-foreground: oklch(0.88 0.01 250);
+  --sidebar-primary: oklch(0.86 0.17 95);
+  --sidebar-primary-foreground: oklch(0.18 0.04 260);
+  --sidebar-accent: oklch(0.27 0.06 260);
+  --sidebar-accent-foreground: oklch(0.98 0.002 250);
+  --sidebar-border: oklch(0.3 0.04 260);
+  --sidebar-ring: oklch(0.55 0.08 258);
+}
+
+.dark {
+  --background: oklch(0.15 0.03 260);
+  --foreground: oklch(0.96 0.005 250);
+  --surface: oklch(0.19 0.04 260);
+  --surface-muted: oklch(0.22 0.04 260);
+  --card: oklch(0.19 0.04 260);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.19 0.04 260);
+  --popover-foreground: oklch(0.96 0.005 250);
+  --primary: oklch(0.86 0.17 95);
+  --primary-foreground: oklch(0.18 0.04 260);
+  --secondary: oklch(0.25 0.04 260);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.25 0.04 260);
+  --muted-foreground: oklch(0.72 0.02 250);
+  --accent: oklch(0.3 0.05 260);
+  --accent-foreground: oklch(0.96 0.005 250);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.6 0.08 258);
+  --sidebar: oklch(0.13 0.03 260);
+  --sidebar-foreground: oklch(0.88 0.01 250);
+  --sidebar-accent: oklch(0.22 0.05 260);
+  --sidebar-accent-foreground: oklch(0.98 0.002 250);
+  --sidebar-border: oklch(1 0 0 / 8%);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html, body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  /* Civic gold accent bar — used at top of app, echoes flag */
+  .gov-accent-bar {
+    background: linear-gradient(
+      90deg,
+      oklch(0.18 0.04 260) 0%,
+      oklch(0.18 0.04 260) 33%,
+      var(--gold) 33%,
+      var(--gold) 66%,
+      var(--destructive) 66%,
+      var(--destructive) 100%
+    );
+  }
+
+  /* In dark mode the "black" band would blend into the dark background.
+     Lift it to a discernible charcoal so the flag strip stays legible. */
+  .dark .gov-accent-bar {
+    background: linear-gradient(
+      90deg,
+      oklch(0.4 0.02 260) 0%,
+      oklch(0.4 0.02 260) 33%,
+      var(--gold) 33%,
+      var(--gold) 66%,
+      var(--destructive) 66%,
+      var(--destructive) 100%
+    );
+  }
+}

@@ -1,0 +1,1045 @@
+<!--
+─────────────────────────────────────────────────────────────────────────────
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+CONFIDENTIAL AND PROPRIETARY
+
+This source file is the original work of Geoffrey Oketwangwu and contains
+confidential, proprietary information protected under copyright and trade-
+secret law. No part may be reproduced, distributed, modified, reverse-
+engineered, or used — in source or compiled form — without the prior
+written permission of the author.
+
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sente Rails — Clerk</title>
+<meta name="csrf_token" content="{{ csrf_token }}">
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://unpkg.com/alpinejs@3.13.5/dist/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .num { font-variant-numeric: tabular-nums; }
+  [x-cloak] { display: none !important; }
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 3px; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen" x-data="clerkApp()" x-init="init()" x-cloak>
+
+<!-- ========================================================== HEADER -->
+<header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white font-bold">SR</div>
+      <div>
+        <div class="font-semibold text-base leading-none">Sente Rails</div>
+        <div class="text-[11px] text-slate-500 uppercase tracking-wider mt-0.5">Counter Clerk</div>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 text-sm">
+      <template x-if="activeShift">
+        <div class="flex items-center gap-3">
+          <div class="text-right">
+            <div class="text-xs text-slate-500" x-text="activeShift.counter_label || activeShift.mda"></div>
+            <div class="font-medium text-slate-900 num" x-text="activeShift.name"></div>
+          </div>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            SHIFT OPEN
+          </span>
+          <button @click="view = 'close-shift'" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition">Close Shift</button>
+        </div>
+      </template>
+      <template x-if="!activeShift">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">No active shift</span>
+      </template>
+      <div class="hidden md:flex items-center gap-2 pl-3 border-l border-slate-200">
+        <div class="w-7 h-7 rounded-full bg-slate-200 flex items-center justify-center text-xs font-medium text-slate-700" x-text="userInitials"></div>
+        <span class="text-xs text-slate-600">{{ user_full_name }}</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ========================================================== MAIN -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+
+  <!-- ---------- VIEW: open-shift (no active shift) -->
+  <template x-if="view === 'open-shift'">
+    <div class="max-w-md mx-auto mt-12">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-1">Open Counter Shift</h2>
+        <p class="text-sm text-slate-500 mb-5">Open a shift to start accepting payments at this counter.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">MDA Counter</label>
+            <select x-model="form.shiftMda" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm">
+              {% for mda in mdas %}
+              <option value="{{ mda.name }}">{{ mda.short_code }} — {{ mda.full_name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">Counter Label <span class="text-slate-400 font-normal">(optional)</span></label>
+            <input type="text" x-model="form.counterLabel" placeholder="Counter 3 — City Hall" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">Opening Float (UGX)</label>
+            <input type="number" x-model.number="form.openingFloat" placeholder="0" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm num">
+            <p class="text-[11px] text-slate-500 mt-1">Cash in the drawer at the start of the shift.</p>
+          </div>
+          <button @click="openShift()" :disabled="loading.shift" class="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm transition disabled:opacity-50 disabled:cursor-not-allowed">
+            <span x-show="!loading.shift">Open Shift</span>
+            <span x-show="loading.shift">Opening…</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ---------- VIEW: counter (shift open, ready to transact) -->
+  <template x-if="view === 'counter'">
+    <div class="grid lg:grid-cols-[1.4fr_1fr] gap-6">
+
+      <!-- LEFT: citizen search + service catalog -->
+      <div class="space-y-5">
+
+        <!-- Citizen search -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Citizen</h3>
+            <template x-if="citizen">
+              <button @click="clearCitizen()" class="text-xs text-slate-500 hover:text-slate-700">Change</button>
+            </template>
+          </div>
+
+          <template x-if="!citizen">
+            <div class="flex gap-2">
+              <input type="text"
+                     x-model="form.searchNin"
+                     @keydown.enter="lookupCitizen()"
+                     placeholder="Enter NIN (e.g. CM78001234ABCD)"
+                     class="flex-1 px-3 py-2.5 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm mono uppercase">
+              <button @click="lookupCitizen()" :disabled="loading.citizen" class="px-4 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium transition disabled:opacity-50">
+                <span x-show="!loading.citizen">Search</span>
+                <span x-show="loading.citizen">…</span>
+              </button>
+            </div>
+          </template>
+
+          <template x-if="citizen">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center text-white font-semibold flex-shrink-0" x-text="(citizen.full_name || '?').slice(0,1)"></div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-semibold text-base" x-text="citizen.full_name"></span>
+                  <template x-if="citizenSource === 'nira'">
+                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">NIRA</span>
+                  </template>
+                  <template x-if="citizenSource === 'local'">
+                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">VERIFIED</span>
+                  </template>
+                  <template x-if="citizenStub">
+                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">STUB</span>
+                  </template>
+                </div>
+                <div class="text-xs text-slate-500 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                  <span class="mono" x-text="citizen.nin || '—'"></span>
+                  <template x-if="citizen.district"><span>📍 <span x-text="citizen.district"></span></span></template>
+                  <template x-if="citizen.gender"><span x-text="citizen.gender"></span></template>
+                  <template x-if="citizen.phone"><span class="mono" x-text="citizen.phone"></span></template>
+                </div>
+                <template x-if="citizenSource === 'nira' && !citizen.name">
+                  <button @click="registerCitizen()" :disabled="loading.register" class="mt-3 text-xs px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 font-medium">
+                    <span x-show="!loading.register">Register in local registry</span>
+                    <span x-show="loading.register">Registering…</span>
+                  </button>
+                </template>
+              </div>
+            </div>
+          </template>
+        </section>
+
+        <!-- Service catalog -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Service Catalog</h3>
+              <p class="text-xs text-slate-500 mt-0.5">
+                <span x-text="activeShift?.mda || ''"></span>
+                · <span x-text="services.length"></span> active services
+              </p>
+            </div>
+            <input type="text" x-model="form.serviceFilter" placeholder="Filter…" class="px-3 py-1.5 rounded-lg border border-slate-200 text-sm w-44 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none">
+          </div>
+          <div class="max-h-[28rem] overflow-y-auto scrollbar-thin">
+            <template x-for="s in filteredServices" :key="s.name">
+              <button @click="addLine(s)"
+                      class="w-full text-left px-5 py-3 border-b border-slate-100 last:border-0 hover:bg-blue-50 transition group">
+                <div class="flex items-center justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-0.5">
+                      <span class="font-medium text-sm truncate" x-text="s.service_name"></span>
+                      <template x-if="s.efris_taxable">
+                        <span class="text-[9px] font-semibold px-1 py-0.5 rounded bg-purple-100 text-purple-700">EFRIS</span>
+                      </template>
+                    </div>
+                    <div class="text-[11px] text-slate-500 flex flex-wrap gap-x-2">
+                      <span class="mono" x-text="s.code"></span>
+                      <template x-if="s.service_family"><span x-text="s.service_family"></span></template>
+                      <template x-if="s.fee_basis && s.fee_basis !== 'Flat'"><span x-text="s.fee_basis"></span></template>
+                    </div>
+                  </div>
+                  <div class="text-right flex-shrink-0">
+                    <div class="font-semibold text-sm num" x-text="fmt(s.fee_amount, s.fee_currency)"></div>
+                    <div class="text-[10px] text-slate-400 group-hover:text-blue-600 mt-0.5">＋ ADD</div>
+                  </div>
+                </div>
+              </button>
+            </template>
+            <template x-if="filteredServices.length === 0">
+              <div class="px-5 py-12 text-center text-sm text-slate-400">No services match</div>
+            </template>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- RIGHT: assessment cart + pay -->
+      <div class="space-y-5">
+
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm">
+          <div class="px-5 py-4 border-b border-slate-100">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500">Assessment</h3>
+            <p class="text-xs text-slate-500 mt-0.5">
+              <span x-text="cart.length"></span> line<span x-show="cart.length !== 1">s</span>
+              <template x-if="distinctMdas.length > 1">
+                · <span class="text-amber-700 font-medium">cross-MDA</span>
+              </template>
+            </p>
+          </div>
+
+          <div class="max-h-72 overflow-y-auto scrollbar-thin">
+            <template x-if="cart.length === 0">
+              <div class="px-5 py-12 text-center text-sm text-slate-400">Pick a service to start an assessment.</div>
+            </template>
+            <template x-for="(line, i) in cart" :key="line._key">
+              <div class="px-5 py-3 border-b border-slate-100 last:border-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                      <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 mono" x-text="line.mda"></span>
+                      <span class="font-medium text-sm truncate" x-text="line.service_name"></span>
+                    </div>
+                    <div class="text-[11px] text-slate-500 mono" x-text="line.code"></div>
+                  </div>
+                  <button @click="removeLine(i)" class="text-slate-400 hover:text-red-500 text-xs">✕</button>
+                </div>
+                <div class="flex items-center justify-between mt-2 gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" min="0.01" step="0.01" x-model.number="line.quantity"
+                           class="w-14 px-2 py-1 rounded border border-slate-200 text-xs num text-center focus:border-blue-500 focus:ring-1 focus:ring-blue-100 outline-none">
+                    <span class="text-xs text-slate-400">×</span>
+                    <input type="number" min="0" step="100" x-model.number="line.rate"
+                           class="w-24 px-2 py-1 rounded border border-slate-200 text-xs num text-right focus:border-blue-500 focus:ring-1 focus:ring-blue-100 outline-none">
+                  </div>
+                  <span class="font-semibold text-sm num" x-text="fmt(line.quantity * line.rate, currency)"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <div class="px-5 py-3 border-t border-slate-200 bg-slate-50 flex items-baseline justify-between">
+            <span class="text-xs uppercase tracking-wider text-slate-500">Total</span>
+            <span class="text-2xl font-bold num" x-text="fmt(total, currency)"></span>
+          </div>
+        </section>
+
+        <!-- Pay panel -->
+        <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"
+                 x-show="cart.length > 0 && citizen">
+          <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Payment</h3>
+          <div class="grid grid-cols-3 gap-2 mb-4">
+            <template x-for="ch in channels" :key="ch.id">
+              <button @click="form.channel = ch.id"
+                      class="px-3 py-2.5 rounded-lg border text-xs font-medium transition"
+                      :class="form.channel === ch.id ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-slate-200 hover:bg-slate-50 text-slate-700'">
+                <span x-text="ch.label"></span>
+              </button>
+            </template>
+          </div>
+
+          <template x-if="form.channel === 'MTN MoMo' || form.channel === 'Airtel Money'">
+            <div class="mb-4">
+              <label class="block text-xs font-medium text-slate-700 mb-1">Citizen MSISDN</label>
+              <input type="tel" x-model="form.msisdn" placeholder="+256772123456"
+                     class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm mono"
+                     :value="form.msisdn || citizen?.phone || ''">
+            </div>
+          </template>
+
+          <button @click="payNow()" :disabled="!canPay || paymentState !== 'idle'"
+                  class="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  x-text="payButtonLabel"></button>
+        </section>
+
+      </div>
+    </div>
+  </template>
+
+  <!-- ---------- VIEW: paying (spinner / progress) -->
+  <template x-if="view === 'paying'">
+    <div class="max-w-md mx-auto mt-12">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 rounded-full border-4 border-blue-100 border-t-blue-600 animate-spin"></div>
+        <h2 class="text-lg font-semibold mb-1">Awaiting payment confirmation</h2>
+        <p class="text-sm text-slate-500" x-text="payingMessage"></p>
+        <div class="mt-6 pt-6 border-t border-slate-100 text-left space-y-1.5">
+          <div class="flex justify-between text-xs"><span class="text-slate-500">Channel</span><span class="font-medium" x-text="paymentIntent?.channel"></span></div>
+          <div class="flex justify-between text-xs"><span class="text-slate-500">Reference</span><span class="font-medium mono" x-text="paymentIntent?.aggregator_reference"></span></div>
+          <div class="flex justify-between text-xs"><span class="text-slate-500">Amount</span><span class="font-medium num" x-text="fmt(paymentIntent?.amount, paymentIntent?.currency)"></span></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ---------- VIEW: receipt (post-payment) -->
+  <template x-if="view === 'receipt'">
+    <div class="max-w-2xl mx-auto">
+      <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-5 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center text-white">✓</div>
+        <div>
+          <div class="font-semibold text-emerald-900">Payment Confirmed</div>
+          <div class="text-xs text-emerald-700">All splits settled directly to MDA collection accounts. Sente Rails holds zero cash.</div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-dashed border-slate-300">
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <div class="text-xs uppercase tracking-wider text-slate-500">{{ user_full_name }} · <span x-text="activeShift?.mda"></span></div>
+              <div class="text-2xl font-bold mt-1">OFFICIAL RECEIPT</div>
+              <div class="text-xs text-slate-500 mt-0.5 mono" x-text="receipt?.assessment?.name"></div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs text-slate-500" x-text="new Date(receipt?.assessment?.paid_at).toLocaleString()"></div>
+              <div class="text-[10px] text-slate-400 mt-1 mono" x-text="receipt?.intent?.aggregator_reference"></div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-y-1 text-sm">
+            <span class="text-slate-500">Citizen</span><span class="text-right font-medium" x-text="citizen?.full_name"></span>
+            <span class="text-slate-500">NIN</span><span class="text-right mono" x-text="citizen?.nin || '—'"></span>
+            <span class="text-slate-500">Channel</span><span class="text-right font-medium" x-text="receipt?.intent?.channel"></span>
+            <template x-if="receipt?.intent?.citizen_msisdn">
+              <span class="text-slate-500 contents"><span class="text-slate-500">Phone</span><span class="text-right mono" x-text="receipt.intent.citizen_msisdn"></span></span>
+            </template>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Services Paid</div>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <th class="text-left py-2 font-medium">MDA</th>
+                <th class="text-left py-2 font-medium">Service</th>
+                <th class="text-right py-2 font-medium">Qty</th>
+                <th class="text-right py-2 font-medium">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <template x-for="line in receipt?.assessment?.assessment_lines || []" :key="line.name">
+                <tr class="border-b border-slate-100">
+                  <td class="py-2 mono text-xs" x-text="line.mda"></td>
+                  <td class="py-2" x-text="line.service_name"></td>
+                  <td class="py-2 text-right num" x-text="line.quantity"></td>
+                  <td class="py-2 text-right num font-medium" x-text="fmt(line.amount, receipt?.assessment?.currency)"></td>
+                </tr>
+              </template>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colspan="3" class="pt-3 text-right font-semibold uppercase tracking-wider text-xs text-slate-500">Total</td>
+                <td class="pt-3 text-right text-xl font-bold num" x-text="fmt(receipt?.assessment?.total_amount, receipt?.assessment?.currency)"></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="px-6 pb-6">
+          <div class="text-xs uppercase tracking-wider text-slate-500 mb-3">Settlement Splits</div>
+          <div class="space-y-2">
+            <template x-for="ev in receipt?.events || []" :key="ev.name">
+              <div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2 text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-white border border-slate-200 mono" x-text="ev.mda"></span>
+                  <span class="text-xs text-slate-500">→</span>
+                  <span class="text-xs text-slate-700" x-text="ev.destination_account"></span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[10px] text-slate-400 mono" x-text="ev.aggregator_txn_id"></span>
+                  <span class="font-medium num" x-text="fmt(ev.amount, ev.currency)"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 text-slate-100 px-6 py-4 flex items-center justify-between">
+          <div class="text-[11px] uppercase tracking-wider opacity-70">Verify this receipt</div>
+          <div class="text-xs mono opacity-90" x-text="receipt?.intent?.idempotency_key?.slice(0, 16) + '…'"></div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-5">
+        <button @click="newTransaction()" class="flex-1 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition">
+          New Transaction →
+        </button>
+        <button @click="window.print()" class="px-5 py-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium transition">
+          🖨 Print
+        </button>
+        <button @click="showTrace = !showTrace" class="px-5 py-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium transition flex items-center gap-2">
+          <span>⚡</span>
+          <span x-text="showTrace ? 'Hide Trace' : 'Show Trace'"></span>
+        </button>
+      </div>
+
+      <!-- ---------- Technical Trace (expandable) -->
+      <div x-show="showTrace && trace" x-cloak class="mt-5 bg-slate-900 text-slate-100 rounded-2xl overflow-hidden shadow-xl">
+        <div class="px-5 py-3 border-b border-slate-700 flex items-center justify-between">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-amber-400">⚡</span>
+            <span class="font-semibold text-sm">Adapter Trace</span>
+            <span class="text-[10px] uppercase tracking-wider opacity-60">audit-grade · OAG-ready</span>
+            <template x-if="traceIsSandbox">
+              <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-bold tracking-wider">SANDBOX</span>
+            </template>
+          </div>
+          <code class="text-[10px] mono opacity-50" x-text="trace?.intent?.aggregator_reference"></code>
+        </div>
+
+        <!-- Sandbox notice -->
+        <template x-if="traceIsSandbox">
+          <div class="px-5 py-2.5 bg-amber-500/10 border-b border-amber-500/30 text-amber-200 text-[11px] leading-relaxed">
+            <strong class="font-semibold">Sandbox quirk:</strong>
+            MTN's MoMo sandbox is a single shared global environment that accepts only <code class="mono bg-amber-900/30 px-1 rounded">EUR</code>. The aggregator's response below echoes
+            <code class="mono bg-amber-900/30 px-1 rounded">currency: EUR</code>
+            while our Payment Intent's canonical amount is
+            <span class="font-semibold" x-text="`${trace?.intent?.amount} ${trace?.intent?.currency}`"></span>.
+            In production (<code class="mono bg-amber-900/30 px-1 rounded">target_environment: mtnuganda</code>) both sides use UGX.
+          </div>
+        </template>
+
+        <!-- Timeline -->
+        <div class="px-5 py-4 border-b border-slate-700">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Timeline</div>
+          <div class="space-y-1.5 max-h-72 overflow-y-auto scrollbar-thin">
+            <template x-for="row in trace?.timeline || []" :key="row.at + row.kind">
+              <div class="flex items-start gap-3 text-xs">
+                <span class="mono opacity-50 flex-shrink-0 w-20" x-text="(row.at || '').slice(11, 19)"></span>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-medium flex-shrink-0"
+                      :class="{
+                        'bg-blue-500/20 text-blue-300': row.kind?.startsWith('assessment'),
+                        'bg-purple-500/20 text-purple-300': row.kind?.startsWith('payment_intent'),
+                        'bg-amber-500/20 text-amber-300': row.kind?.startsWith('adapter'),
+                        'bg-emerald-500/20 text-emerald-300': row.kind?.startsWith('payment_event'),
+                      }"
+                      x-text="row.kind"></span>
+                <span class="opacity-90 flex-1 leading-snug" x-text="row.summary"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Splits -->
+        <div class="px-5 py-4 border-b border-slate-700">
+          <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Settlement Splits — aggregator-side (amounts in <span x-text="trace?.intent?.currency"></span>, canonical)</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <template x-for="s in trace?.intent?.splits || []" :key="s.mda">
+              <div class="bg-slate-800/60 border border-slate-700 rounded-lg px-3 py-2 text-xs">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-semibold text-slate-200 mono" x-text="s.mda"></span>
+                  <span class="font-semibold num text-emerald-400" x-text="fmt(s.amount, trace?.intent?.currency)"></span>
+                </div>
+                <div class="text-[10px] opacity-60 mono" x-text="`→ ${s.destination_account} · ${s.destination_account_type}`"></div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Initiate request/response (MoMo example) -->
+        <details class="border-b border-slate-700">
+          <summary class="px-5 py-3 cursor-pointer hover:bg-slate-800/50 text-sm font-medium flex items-center gap-2">
+            <span class="text-amber-300">→</span>
+            <span>:initiate — request body sent to <span x-text="trace?.intent?.aggregator || trace?.intent?.channel"></span></span>
+          </summary>
+          <pre class="px-5 py-3 text-[10px] mono leading-relaxed text-slate-300 bg-slate-950/60 overflow-x-auto" x-text="JSON.stringify(trace?.intent?.traces?.initiate_request, null, 2)"></pre>
+        </details>
+
+        <details class="border-b border-slate-700">
+          <summary class="px-5 py-3 cursor-pointer hover:bg-slate-800/50 text-sm font-medium flex items-center gap-2">
+            <span class="text-emerald-300">←</span>
+            <span>:initiate — response (HTTP <span x-text="trace?.intent?.traces?.initiate_response?.http_status"></span>)</span>
+          </summary>
+          <pre class="px-5 py-3 text-[10px] mono leading-relaxed text-slate-300 bg-slate-950/60 overflow-x-auto" x-text="JSON.stringify(trace?.intent?.traces?.initiate_response, null, 2)"></pre>
+        </details>
+
+        <details class="border-b border-slate-700">
+          <summary class="px-5 py-3 cursor-pointer hover:bg-slate-800/50 text-sm font-medium flex items-center gap-2">
+            <span class="text-emerald-300">←</span>
+            <span>:verify — aggregator confirmation</span>
+          </summary>
+          <pre class="px-5 py-3 text-[10px] mono leading-relaxed text-slate-300 bg-slate-950/60 overflow-x-auto" x-text="JSON.stringify(trace?.intent?.traces?.verify_response, null, 2)"></pre>
+        </details>
+
+        <details>
+          <summary class="px-5 py-3 cursor-pointer hover:bg-slate-800/50 text-sm font-medium flex items-center gap-2">
+            <span class="text-blue-300">⛒</span>
+            <span>Payment Events — proof bundles per MDA (<span x-text="trace?.events?.length"></span>)</span>
+          </summary>
+          <pre class="px-5 py-3 text-[10px] mono leading-relaxed text-slate-300 bg-slate-950/60 overflow-x-auto" x-text="JSON.stringify(trace?.events, null, 2)"></pre>
+        </details>
+
+        <!-- Live re-query MTN — the showcase Act 2 "ask the aggregator now" moment -->
+        <div class="border-t border-slate-700 bg-slate-950/40">
+          <div class="px-5 py-3 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div class="text-xs font-semibold text-slate-200">Live re-query the aggregator</div>
+              <div class="text-[10px] text-slate-500 mt-0.5">Ask <span x-text="trace?.intent?.aggregator || trace?.intent?.channel"></span> what they say about this transaction <em>now</em> — proves the audit chain is live, not recorded.</div>
+            </div>
+            <button @click="reQueryAggregator()" :disabled="liveQuerying"
+                    class="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-900 text-xs font-semibold transition disabled:opacity-50 flex items-center gap-2">
+              <span x-show="!liveQuerying">🔍 Re-query <span x-text="trace?.intent?.aggregator || 'aggregator'"></span></span>
+              <span x-show="liveQuerying">Querying…</span>
+            </button>
+          </div>
+
+          <template x-if="liveStatus">
+            <div class="px-5 py-3 border-t border-slate-700">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-[10px] uppercase tracking-wider text-slate-400">queried at</span>
+                <span class="text-[10px] mono text-slate-300" x-text="liveStatus.queried_at"></span>
+                <span class="ml-auto text-[10px] font-semibold px-2 py-0.5 rounded"
+                      :class="liveStatus.match ? 'bg-emerald-500/20 text-emerald-300' : 'bg-red-500/20 text-red-300'"
+                      x-text="liveStatus.match ? '✓ MATCH' : '⚠ DRIFT'"></span>
+              </div>
+              <div class="grid sm:grid-cols-2 gap-2 text-xs">
+                <div class="bg-slate-800/60 border border-slate-700 rounded-lg p-3">
+                  <div class="text-[10px] uppercase tracking-wider text-slate-400 mb-2">Sente Rails (stored)</div>
+                  <div class="space-y-1">
+                    <div><span class="text-slate-400">status:</span> <span class="font-semibold text-slate-200" x-text="liveStatus.stored.status"></span></div>
+                    <div><span class="text-slate-400">amount:</span> <span class="font-semibold text-slate-200 num" x-text="`${liveStatus.stored.amount} ${liveStatus.stored.currency}`"></span></div>
+                    <div><span class="text-slate-400">confirmed_at:</span> <span class="mono text-[10px] text-slate-300" x-text="liveStatus.stored.confirmed_at || '—'"></span></div>
+                  </div>
+                </div>
+                <div class="bg-emerald-900/30 border border-emerald-600/40 rounded-lg p-3">
+                  <div class="text-[10px] uppercase tracking-wider text-emerald-300/80 mb-2"><span x-text="liveStatus.aggregator"></span> (live, just now)</div>
+                  <div class="space-y-1">
+                    <div><span class="text-emerald-400/70">status:</span> <span class="font-semibold text-emerald-200" x-text="liveStatus.live.status"></span></div>
+                    <div><span class="text-emerald-400/70">txn_id:</span> <span class="mono text-[10px] text-emerald-200" x-text="liveStatus.live.txn_id || '—'"></span></div>
+                    <div><span class="text-emerald-400/70">amount:</span> <span class="font-semibold text-emerald-200 num" x-text="`${liveStatus.live.amount} ${liveStatus.live.currency}`"></span></div>
+                    <div><span class="text-emerald-400/70">stub:</span> <span class="font-semibold" :class="liveStatus.live.stub ? 'text-amber-300' : 'text-emerald-200'" x-text="liveStatus.live.stub ? 'true' : 'false (live aggregator)'"></span></div>
+                  </div>
+                </div>
+              </div>
+              <details class="mt-3">
+                <summary class="cursor-pointer text-[11px] text-slate-400 hover:text-slate-200">Raw response body</summary>
+                <pre class="mt-2 px-3 py-2 text-[10px] mono leading-relaxed text-slate-300 bg-slate-950/60 rounded overflow-x-auto" x-text="JSON.stringify(liveStatus.live.raw_response, null, 2)"></pre>
+              </details>
+            </div>
+          </template>
+        </div>
+
+        <div class="px-5 py-2 text-[10px] text-slate-500 bg-slate-950/40 border-t border-slate-700">
+          GET /v1/payment-intents/<span x-text="trace?.intent?.name"></span>/trace · GET /v1/payment-intents/<span x-text="trace?.intent?.name"></span>/live-status
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- ---------- VIEW: close-shift -->
+  <template x-if="view === 'close-shift'">
+    <div class="max-w-md mx-auto mt-8">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <h2 class="text-lg font-semibold mb-1">Close Shift</h2>
+        <p class="text-sm text-slate-500 mb-5" x-text="activeShift?.name"></p>
+        <div class="space-y-3 mb-5">
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Opening Float</span><span class="font-medium num" x-text="fmt(activeShift?.opening_float, currency)"></span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Cash Collected (system)</span><span class="font-medium num" x-text="fmt(activeShift?.cash_collected, currency)"></span></div>
+          <div class="flex justify-between text-sm border-t border-slate-100 pt-3"><span class="text-slate-500 font-medium">Cash Expected</span><span class="font-semibold num" x-text="fmt(activeShift?.cash_expected, currency)"></span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">MoMo Collected</span><span class="num" x-text="fmt(activeShift?.momo_collected, currency)"></span></div>
+          <div class="flex justify-between text-sm"><span class="text-slate-500">Airtel Collected</span><span class="num" x-text="fmt(activeShift?.airtel_collected, currency)"></span></div>
+          <div class="flex justify-between text-sm border-t border-slate-100 pt-3"><span class="text-slate-500 font-medium">Total Collected</span><span class="font-semibold num text-lg" x-text="fmt(activeShift?.total_collected, currency)"></span></div>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1">Cash Counted</label>
+            <input type="number" x-model.number="form.cashCounted"
+                   class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm num">
+            <p class="text-[11px] text-slate-500 mt-1">
+              Variance: <span class="font-medium num" :class="varianceColor" x-text="fmt((form.cashCounted || 0) - (activeShift?.cash_expected || 0), currency)"></span>
+            </p>
+          </div>
+          <template x-if="Math.abs((form.cashCounted || 0) - (activeShift?.cash_expected || 0)) > 0.005">
+            <div>
+              <label class="block text-xs font-medium text-slate-700 mb-1">Variance Reason <span class="text-red-500">*</span></label>
+              <textarea x-model="form.varianceReason" rows="2" class="w-full px-3 py-2 rounded-lg border border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm" placeholder="Why is the count off?"></textarea>
+            </div>
+          </template>
+          <div class="flex gap-2 pt-2">
+            <button @click="view = 'counter'" class="px-4 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-sm transition">Cancel</button>
+            <button @click="closeShift()" :disabled="loading.shift" class="flex-1 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition disabled:opacity-50">
+              <span x-show="!loading.shift">Close Shift</span>
+              <span x-show="loading.shift">Closing…</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+</main>
+
+<!-- ========================================================== TOAST -->
+<div class="fixed top-4 right-4 z-50 space-y-2" aria-live="polite">
+  <template x-for="t in toasts" :key="t.id">
+    <div class="px-4 py-3 rounded-lg shadow-lg border max-w-sm flex items-start gap-3 transition"
+         :class="{
+           'bg-emerald-50 border-emerald-200 text-emerald-900': t.kind === 'success',
+           'bg-red-50 border-red-200 text-red-900': t.kind === 'error',
+           'bg-amber-50 border-amber-200 text-amber-900': t.kind === 'warning',
+           'bg-white border-slate-200 text-slate-700': t.kind === 'info'
+         }">
+      <div class="text-sm" x-text="t.message"></div>
+      <button @click="toasts = toasts.filter(x => x.id !== t.id)" class="text-current opacity-50 hover:opacity-100">✕</button>
+    </div>
+  </template>
+</div>
+
+<script>
+function clerkApp() {
+  const CSRF = document.querySelector('meta[name=csrf_token]').content;
+  const API_BASE = '/v1';
+
+  async function call(method, path, opts = {}) {
+    let url = API_BASE + path;
+    if (method === 'GET' && opts.params) {
+      const qs = new URLSearchParams(
+        Object.entries(opts.params).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      ).toString();
+      if (qs) url += '?' + qs;
+    }
+    const res = await fetch(url, {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        // Same-origin CSRF token. Platform wire-format header; external
+        // API consumers use Bearer auth and never send this.
+        'X-Frappe-CSRF-Token': CSRF,  // AUDIT-OK: same-origin wire header
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      credentials: 'same-origin',
+    });
+    let body = {};
+    try { body = await res.json(); } catch (e) {}
+    if (!res.ok || body.error) {
+      throw new Error(body.error?.message || `HTTP ${res.status}`);
+    }
+    return body.data;
+  }
+
+  return {
+    // ---------- state ----------
+    view: 'open-shift',
+    loading: { shift: false, citizen: false, register: false, pay: false },
+    toasts: [],
+    nextToastId: 1,
+
+    activeShift: null,
+    citizen: null,
+    citizenSource: null,
+    citizenStub: false,
+
+    services: [],
+    cart: [],
+    currency: 'UGX',
+
+    paymentIntent: null,
+    paymentState: 'idle',
+    payingMessage: '',
+    receipt: null,
+    trace: null,
+    showTrace: false,
+    liveStatus: null,
+    liveQuerying: false,
+
+    channels: [
+      { id: 'MTN MoMo',      label: 'MTN MoMo' },
+      { id: 'Airtel Money',  label: 'Airtel' },
+      { id: 'Cash',          label: 'Cash' },
+      { id: 'Card',          label: 'Card' },
+      { id: 'Bank Transfer', label: 'Bank' },
+      { id: 'Voucher',       label: 'Voucher' },
+    ],
+
+    form: {
+      shiftMda: '{% if mdas %}{{ mdas[0].name }}{% endif %}',
+      counterLabel: '',
+      openingFloat: 0,
+      searchNin: '',
+      serviceFilter: '',
+      channel: 'MTN MoMo',
+      msisdn: '',
+      cashCounted: 0,
+      varianceReason: '',
+    },
+
+    // ---------- init ----------
+    async init() {
+      await this.checkActiveShift();
+    },
+
+    async checkActiveShift() {
+      try {
+        const shift = await call('GET', '/counter-shifts/active', { params: { mda: this.form.shiftMda } });
+        if (shift) {
+          this.activeShift = shift;
+          this.view = 'counter';
+          await this.loadServices(shift.mda);
+        } else {
+          this.view = 'open-shift';
+        }
+      } catch (e) {
+        this.toast('Failed to check active shift: ' + e.message, 'error');
+      }
+    },
+
+    // ---------- shifts ----------
+    async openShift() {
+      this.loading.shift = true;
+      try {
+        const shift = await call('POST', '/counter-shifts', {
+          body: {
+            mda: this.form.shiftMda,
+            counter_label: this.form.counterLabel,
+            opening_float: this.form.openingFloat,
+          },
+        });
+        this.activeShift = shift;
+        this.view = 'counter';
+        await this.loadServices(shift.mda);
+        this.toast(`Shift ${shift.name} opened`, 'success');
+      } catch (e) {
+        this.toast(e.message, 'error');
+      } finally {
+        this.loading.shift = false;
+      }
+    },
+
+    async closeShift() {
+      const variance = (this.form.cashCounted || 0) - (this.activeShift?.cash_expected || 0);
+      if (Math.abs(variance) > 0.005 && !(this.form.varianceReason || '').trim()) {
+        this.toast('Variance reason is required', 'warning'); return;
+      }
+      this.loading.shift = true;
+      try {
+        const shift = await call('POST', `/counter-shifts/${this.activeShift.name}:close`, {
+          body: {
+            cash_counted: this.form.cashCounted,
+            variance_reason: this.form.varianceReason || null,
+          },
+        });
+        this.toast(`Shift closed · variance ${this.fmt(shift.cash_variance, shift.currency || 'UGX')}`, 'success');
+        this.activeShift = null;
+        this.cart = []; this.citizen = null; this.receipt = null;
+        this.form.cashCounted = 0; this.form.varianceReason = '';
+        this.view = 'open-shift';
+      } catch (e) {
+        this.toast(e.message, 'error');
+      } finally {
+        this.loading.shift = false;
+      }
+    },
+
+    // ---------- citizen ----------
+    async lookupCitizen() {
+      const nin = (this.form.searchNin || '').trim().toUpperCase();
+      if (!nin) return;
+      this.loading.citizen = true;
+      try {
+        const res = await call('GET', '/citizens/search', { params: { nin } });
+        if (res.source === 'not_found' || !res.citizen) {
+          this.toast(`No citizen found for ${nin}`, 'warning');
+          this.citizen = null; this.citizenSource = null;
+          return;
+        }
+        this.citizen = res.citizen;
+        this.citizenSource = res.source;
+        this.citizenStub = !!res.stub;
+        this.toast(`Found via ${res.source.toUpperCase()}` + (res.stub ? ' (stub)' : ''), 'info');
+      } catch (e) {
+        this.toast(e.message, 'error');
+      } finally {
+        this.loading.citizen = false;
+      }
+    },
+
+    async registerCitizen() {
+      if (!this.citizen) return;
+      this.loading.register = true;
+      try {
+        const c = await call('POST', '/citizens', {
+          body: {
+            nin: this.citizen.nin,
+            full_name: this.citizen.full_name,
+            first_name: this.citizen.first_name,
+            middle_name: this.citizen.middle_name,
+            surname: this.citizen.surname,
+            dob: this.citizen.dob,
+            gender: this.citizen.gender,
+            district: this.citizen.district,
+            sub_county: this.citizen.sub_county,
+            parish: this.citizen.parish,
+            village: this.citizen.village,
+          },
+        });
+        this.citizen = c;
+        this.citizenSource = 'local';
+        this.citizenStub = false;
+        this.toast(`Registered ${c.name}`, 'success');
+      } catch (e) {
+        this.toast(e.message, 'error');
+      } finally {
+        this.loading.register = false;
+      }
+    },
+
+    clearCitizen() {
+      this.citizen = null;
+      this.citizenSource = null;
+      this.citizenStub = false;
+      this.form.searchNin = '';
+      this.form.msisdn = '';
+    },
+
+    // ---------- services + cart ----------
+    async loadServices(mda) {
+      try {
+        // Load services for the counter MDA AND for cross-MDA partners
+        // (e.g. when GULU offers a Lands/URA composite, we need those too)
+        const local = await call('GET', '/services', { params: { mda, limit: 200 } });
+        // For now just load the counter MDA's services + add URA stamp duty
+        // as the prototype cross-MDA partner
+        const ura = await call('GET', '/services', { params: { mda: 'URA', limit: 50 } });
+        this.services = [...local, ...ura];
+      } catch (e) {
+        this.toast('Could not load services: ' + e.message, 'error');
+      }
+    },
+
+    addLine(s) {
+      if (!this.citizen) {
+        this.toast('Look up the citizen first', 'warning'); return;
+      }
+      this.cart.push({
+        _key: Math.random().toString(36).slice(2),
+        mda: s.mda,
+        service: s.name,
+        service_name: s.service_name,
+        code: s.code,
+        quantity: 1,
+        rate: s.fee_amount,
+        efris_taxable: s.efris_taxable,
+      });
+    },
+
+    removeLine(i) {
+      this.cart.splice(i, 1);
+    },
+
+    get filteredServices() {
+      const q = (this.form.serviceFilter || '').toLowerCase().trim();
+      if (!q) return this.services;
+      return this.services.filter(s =>
+        (s.service_name || '').toLowerCase().includes(q) ||
+        (s.code || '').toLowerCase().includes(q) ||
+        (s.service_family || '').toLowerCase().includes(q)
+      );
+    },
+
+    get total() {
+      return this.cart.reduce((sum, l) => sum + (l.quantity || 0) * (l.rate || 0), 0);
+    },
+
+    get distinctMdas() {
+      return [...new Set(this.cart.map(l => l.mda))];
+    },
+
+    get canPay() {
+      if (this.cart.length === 0 || !this.citizen) return false;
+      if ((this.form.channel === 'MTN MoMo' || this.form.channel === 'Airtel Money') &&
+          !((this.form.msisdn || this.citizen?.phone || '').trim())) return false;
+      return true;
+    },
+
+    get payButtonLabel() {
+      if (this.cart.length === 0) return 'Add services to start';
+      if (!this.citizen) return 'Select a citizen first';
+      return `Pay ${this.fmt(this.total, this.currency)} via ${this.form.channel}`;
+    },
+
+    // ---------- payment ----------
+    async payNow() {
+      this.loading.pay = true;
+      this.paymentState = 'creating';
+      this.view = 'paying';
+      this.payingMessage = 'Creating assessment…';
+      try {
+        // 1. Ensure citizen exists locally (auto-register from NIRA stub)
+        if (!this.citizen.name) {
+          this.payingMessage = 'Registering citizen…';
+          await this.registerCitizen();
+        }
+        // 2. Create assessment
+        const asmt = await call('POST', '/assessments', {
+          body: {
+            citizen: this.citizen.name,
+            mda_default: this.activeShift.mda,
+            currency: this.currency,
+            lines: this.cart.map(l => ({
+              mda: l.mda, service: l.service, quantity: l.quantity, rate: l.rate,
+            })),
+          },
+        });
+        // 3. Assess (Draft → Assessed)
+        this.payingMessage = 'Confirming assessment…';
+        await call('POST', `/assessments/${asmt.name}:assess`);
+        // 4. Create Payment Intent (auto-derives splits)
+        this.payingMessage = 'Building payment intent + split rules…';
+        const pi = await call('POST', '/payment-intents', {
+          body: {
+            assessment: asmt.name,
+            channel: this.form.channel,
+            citizen_msisdn: this.form.msisdn || this.citizen.phone,
+            aggregator: this.form.channel.startsWith('MTN') ? 'MTN' :
+                        this.form.channel.startsWith('Airtel') ? 'Airtel' : null,
+          },
+        });
+        this.paymentIntent = pi;
+        // 5. Initiate
+        this.payingMessage = `Sending ${this.form.channel} push…`;
+        const init = await call('POST', `/payment-intents/${pi.name}:initiate`);
+        this.paymentIntent = init.intent;
+        // 6. Confirm (instant for stub adapters; webhook-driven in prod)
+        this.payingMessage = 'Awaiting aggregator confirmation…';
+        const conf = await call('POST', `/payment-intents/${pi.name}:confirm`);
+        // 7. Receipt
+        this.receipt = conf;
+        this.view = 'receipt';
+        this.toast(`Payment confirmed · ${conf.events.length} split(s) settled`, 'success');
+        // 7b. Pre-fetch the trace so the "Show Trace" button reveals instantly
+        try {
+          this.trace = await call('GET', `/payment-intents/${pi.name}/trace`);
+        } catch (e) {
+          console.warn('trace fetch failed', e.message);
+          this.trace = null;
+        }
+        // 8. Refresh shift aggregates so close-shift view is fresh
+        const refreshed = await call('POST', `/counter-shifts/${this.activeShift.name}:refresh`);
+        this.activeShift = refreshed;
+      } catch (e) {
+        this.paymentState = 'failed';
+        this.toast(`Payment failed: ${e.message}`, 'error');
+        this.view = 'counter';
+      } finally {
+        this.loading.pay = false;
+        this.paymentState = 'idle';
+      }
+    },
+
+    newTransaction() {
+      this.cart = [];
+      this.citizen = null;
+      this.citizenSource = null;
+      this.citizenStub = false;
+      this.receipt = null;
+      this.trace = null;
+      this.showTrace = false;
+      this.liveStatus = null;
+      this.liveQuerying = false;
+      this.paymentIntent = null;
+      this.form.searchNin = '';
+      this.form.msisdn = '';
+      this.view = 'counter';
+    },
+
+    async reQueryAggregator() {
+      if (!this.trace?.intent?.name) return;
+      this.liveQuerying = true;
+      try {
+        this.liveStatus = await call('GET', `/payment-intents/${this.trace.intent.name}/live-status`);
+        this.toast(
+          this.liveStatus.match
+            ? `Match — ${this.liveStatus.aggregator} confirms ${this.liveStatus.live.status}`
+            : `Drift — stored ${this.liveStatus.stored.status} vs live ${this.liveStatus.live.status}`,
+          this.liveStatus.match ? 'success' : 'warning'
+        );
+      } catch (e) {
+        this.toast(`Live query failed: ${e.message}`, 'error');
+        this.liveStatus = null;
+      } finally {
+        this.liveQuerying = false;
+      }
+    },
+
+    // ---------- helpers ----------
+    fmt(n, currency = 'UGX') {
+      if (n === null || n === undefined || isNaN(n)) return '—';
+      const v = Number(n).toLocaleString('en-UG', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      return `${currency} ${v}`;
+    },
+
+    get traceIsSandbox() {
+      // Trace is sandbox if the aggregator echoed a currency that differs
+      // from our canonical Payment Intent currency (sandbox forces EUR).
+      const vr = this.trace?.intent?.traces?.verify_response;
+      const echoed = vr?.body?.currency || vr?.body?.body?.currency;
+      const intentCur = this.trace?.intent?.currency;
+      return echoed && intentCur && echoed !== intentCur;
+    },
+
+    get varianceColor() {
+      const v = (this.form.cashCounted || 0) - (this.activeShift?.cash_expected || 0);
+      if (Math.abs(v) < 0.005) return 'text-emerald-700';
+      return v > 0 ? 'text-amber-700' : 'text-red-700';
+    },
+
+    get userInitials() {
+      const n = "{{ user_full_name }}".trim();
+      const parts = n.split(/\s+/);
+      return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+    },
+
+    toast(message, kind = 'info') {
+      const id = this.nextToastId++;
+      this.toasts.push({ id, message, kind });
+      setTimeout(() => { this.toasts = this.toasts.filter(t => t.id !== id); }, 4500);
+    },
+  };
+}
+</script>
+
+</body>
+</html>

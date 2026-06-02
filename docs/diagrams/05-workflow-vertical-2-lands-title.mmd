@@ -1,0 +1,54 @@
+%% Sente Rails - Figure 5: Vertical 2 workflow - Lands title transfer
+%% Reference workflow 2 — API-led Lands title transfer
+%% Demonstrates: EFRIS PRN generation, unified assessment, split disbursement,
+%% cross-MDA webhook propagation - all via Postman against /v1
+%% Render: mmdc -i 05-workflow-vertical-2-lands-title.mmd -o 05-workflow-vertical-2-lands-title.svg -b transparent
+
+sequenceDiagram
+  autonumber
+  actor Integrator as Integrator<br/>(Postman client)
+  participant Rail as Sente Rails /v1<br/>(routed via in-process router)
+  participant EFRIS as URA EFRIS<br/>(sandbox)
+  participant MoMo as MTN MoMo<br/>(sandbox)
+  participant MOL as Ministry of Lands<br/>(Mode A surface)
+  participant URA as URA<br/>(Mode B surface)
+
+  Note over Integrator,Rail: API-led tour<br/>Postman + /docs Scalar side-by-side
+
+  Integrator->>Rail: POST /v1/citizens/lookup<br/>{ "nin": "CM78001234ABCD" }
+  Rail-->>Integrator: 200 - citizen verified
+
+  Integrator->>Rail: POST /v1/assessments<br/>lines: [TITLE-TRANSFER (MOL), STAMP-DUTY (URA)]
+  Rail->>Rail: Build cross-MDA assessment<br/>cross_mda banner = true
+
+  Note right of Rail: For each efris_taxable line<br/>call the fiscal adapter
+  Rail->>EFRIS: Fiscalise line 1 - TITLE-TRANSFER
+  EFRIS-->>Rail: PRN_MOL_xxxxx + FDN
+  Rail->>EFRIS: Fiscalise line 2 - STAMP-DUTY
+  EFRIS-->>Rail: PRN_URA_yyyyy + FDN
+
+  Rail-->>Integrator: 201 Assessment created<br/>2 lines - 2 MDAs - 2 FDNs<br/>total 90,000 UGX
+
+  Integrator->>Rail: POST /v1/payment-intents<br/>{assessment, channel: "MoMo"}
+  Rail-->>Integrator: Payment Intent draft
+
+  Integrator->>Rail: POST /v1/payment-intents/{name}/initiate
+  Rail->>MoMo: requestToPay 90,000 UGX (unified)
+  MoMo-->>Rail: ACCEPTED - reference attached
+  Rail-->>Integrator: 202 - awaiting confirmation
+
+  MoMo-->>Rail: Webhook - status=SUCCESSFUL
+
+  Note over Rail,URA: Per-MDA split at the aggregator level<br/>(no public money on the rail)
+  Rail->>MoMo: Split disbursement<br/>MOL: 75,000 - URA: 15,000
+
+  Rail->>MOL: Webhook - title transfer paid<br/>(propagate to MOL system of record)
+  Rail->>URA: Webhook - stamp duty paid<br/>(propagate to URA system of record)
+
+  Integrator->>Rail: GET /v1/payment-intents/{name}/trace
+  Rail-->>Integrator: Full trace<br/>(initiate -> SUCCESSFUL -> split -> propagation)
+
+  Integrator->>Rail: GET /v1/payment-intents/{name}/live-status
+  Rail->>MoMo: GET transaction by reference
+  MoMo-->>Rail: aggregator-side state
+  Rail-->>Integrator: Side-by-side: ours vs MoMo's<br/>MATCH (reconciliation proof)

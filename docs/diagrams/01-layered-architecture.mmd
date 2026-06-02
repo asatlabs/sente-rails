@@ -1,0 +1,72 @@
+%% Sente Rails - Figure 1: Layered architecture
+%% Referenced in PROGRAM_BRIEF.md section 2.2
+%% Render: mmdc -i 01-layered-architecture.mmd -o 01-layered-architecture.svg -b transparent
+
+flowchart TD
+  subgraph EDGE["Edge layer"]
+    NGX["nginx<br/>HTTPS, HSTS, rate limit,<br/>edge Desk-block"]
+    CDN["Static assets<br/>workbench wb-assets"]
+  end
+
+  subgraph GATEWAY["Gateway layer"]
+    AUTH["Authentication + role gate"]
+    IDEMP["Idempotency keys + audit log"]
+    ROUTER["In-process router<br/>v1 dispatch"]
+  end
+
+  subgraph APIL["API layer"]
+    V1["v1 surface<br/>22 endpoints, 7 modules"]
+    OAS["OpenAPI 3.1 spec<br/>served at docs"]
+  end
+
+  subgraph DOMAIN["Domain layer"]
+    CITIZEN["Citizen"]
+    CATALOG["MDA, Service,<br/>Country Profile"]
+    ASSESS["Assessment, Line,<br/>Counter Shift"]
+    PI["Payment Intent,<br/>Split, Event"]
+  end
+
+  subgraph DATA["Persistence layer"]
+    DB[("MariaDB<br/>single tenant per site")]
+    REDIS[("Redis<br/>cache + queue")]
+    BAK["Off-site backup"]
+  end
+
+  subgraph INTG["Integration layer (adapter dispatch)"]
+    FISCAL["Fiscal: EFRIS"]
+    PAY["Payment: MoMo, Airtel,<br/>Pesapal, Card, Bank"]
+    IDADAPT["Identity: NIRA via UGHub"]
+    GW["Gateway: NITA-U UGHub"]
+  end
+
+  NGX --> AUTH
+  CDN --> NGX
+  AUTH --> IDEMP --> ROUTER --> V1
+  V1 --> CITIZEN
+  V1 --> CATALOG
+  V1 --> ASSESS
+  V1 --> PI
+  CITIZEN --> DB
+  CATALOG --> DB
+  ASSESS --> DB
+  PI --> DB
+  DB -.-> BAK
+  V1 -.-> REDIS
+  V1 ==> FISCAL
+  V1 ==> PAY
+  V1 ==> IDADAPT
+  V1 ==> GW
+
+  classDef edge fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+  classDef gateway fill:#fef3c7,stroke:#d97706,color:#78350f
+  classDef api fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+  classDef domain fill:#dcfce7,stroke:#16a34a,color:#14532d
+  classDef data fill:#f3e8ff,stroke:#9333ea,color:#581c87
+  classDef intg fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+
+  class NGX,CDN edge
+  class AUTH,IDEMP,ROUTER gateway
+  class V1,OAS api
+  class CITIZEN,CATALOG,ASSESS,PI domain
+  class DB,REDIS,BAK data
+  class FISCAL,PAY,IDADAPT,GW intg

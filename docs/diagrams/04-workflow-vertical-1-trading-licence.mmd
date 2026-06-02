@@ -1,0 +1,48 @@
+%% Sente Rails - Figure 4: Vertical 1 workflow - Gulu trading licence renewal
+%% Reference workflow 1 — counter-led trading-licence renewal
+%% Referenced in PROGRAM_BRIEF.md section 4
+%% Render: mmdc -i 04-workflow-vertical-1-trading-licence.mmd -o 04-workflow-vertical-1-trading-licence.svg -b transparent
+
+sequenceDiagram
+  autonumber
+  actor Clerk as Counter Clerk<br/>(Gulu City Hall)
+  participant Rail as Sente Rails<br/>/clerk + /v1
+  participant NIRA as NIRA<br/>(via UGHub, sandbox)
+  participant MoMo as MTN MoMo<br/>(sandbox live)
+  actor Citizen as Mukasa J. P.<br/>(MSISDN +256772...)
+  participant Ledger as Gulu City Ledger<br/>(receivable GL)
+  participant Verify as Public Verifier<br/>(/verify/{ref})
+
+  Note over Clerk,Rail: Shift open<br/>opening float 100,000 UGX
+  Clerk->>Rail: Open shift on GULU
+
+  Note over Clerk,Citizen: Citizen approaches the counter
+  Clerk->>Rail: Search NIN CM78001234ABCD
+  Rail->>Rail: Cascade local first
+  Rail->>NIRA: Identity lookup (stub today, live on cred-land)
+  NIRA-->>Rail: Verified - source: NIRA
+  Rail-->>Clerk: Mukasa John Patrick (Gulu)
+
+  Clerk->>Rail: Add line - TL-RENEW (50,000 UGX)
+  Rail-->>Clerk: Assessment drafted - 1 line - GULU only
+  Note right of Rail: efris_taxable=true<br/>FDN attaches on assess
+
+  Clerk->>Rail: Assess - locks the bill
+  Rail-->>Clerk: Status: Assessed - print PIN
+
+  Clerk->>Rail: Initiate payment via MoMo
+  Rail->>MoMo: requestToPay - 50,000 UGX
+  MoMo-->>Citizen: USSD prompt - approve 50,000?
+  Citizen-->>MoMo: PIN + approve
+  MoMo-->>Rail: Webhook - status=SUCCESSFUL<br/>aggregator txn ref attached
+
+  Rail->>Ledger: Post receivable + journal entry
+  Rail->>Rail: Generate QR pointing at /verify/{ref}
+  Rail-->>Clerk: Receipt rendered - thermal print + screen
+
+  Note over Citizen,Verify: After leaving the counter
+  Citizen->>Verify: Scan QR on printed receipt
+  Verify-->>Citizen: PII-safe summary<br/>(MDA, service, amount, date, status)
+
+  Clerk->>Rail: Close shift<br/>cash count = float + cash sales
+  Rail-->>Clerk: Variance = 0 - shift sealed

@@ -1,0 +1,10 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+node_modules
+__pycache__
+
+# Delivered out-of-band — see IMPLEMENTATION_PLAN.md §8.2.
+docs/DEMO_VIDEO_SCRIPT.md

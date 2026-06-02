@@ -1,0 +1,737 @@
+<!--
+─────────────────────────────────────────────────────────────────────────────
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+CONFIDENTIAL AND PROPRIETARY
+
+This source file is the original work of Geoffrey Oketwangwu and contains
+confidential, proprietary information protected under copyright and trade-
+secret law. No part may be reproduced, distributed, modified, reverse-
+engineered, or used — in source or compiled form — without the prior
+written permission of the author.
+
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-900: #1e3a8a;
+    --primary-700: #1d4ed8;
+    --primary-600: #2563eb;
+    --primary-50: #eff6ff;
+    --slate-900: #0f172a;
+    --slate-800: #1e293b;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-400: #94a3b8;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50: #f8fafc;
+    --success: #059669;
+    --success-50: #ecfdf5;
+    --warning: #f59e0b;
+    --warning-50: #fffbeb;
+    --danger: #dc2626;
+    --danger-50: #fef2f2;
+    --flag-yellow: #FCDC04;
+    --flag-red: #D90000;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--slate-900);
+    background: var(--slate-50);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--primary-600); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .flag-bar { height: 4px; display: flex; }
+  .flag-bar > span { flex: 1; }
+  .flag-bar .black { background: #000; }
+  .flag-bar .yellow { background: var(--flag-yellow); }
+  .flag-bar .red { background: var(--flag-red); }
+
+  /* Top bar */
+  .topbar {
+    background: white;
+    border-bottom: 1px solid var(--slate-200);
+    padding: 14px 24px;
+  }
+  .topbar-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; color: var(--slate-900); }
+  .brand:hover { text-decoration: none; }
+  .brand-logo {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-600) 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 11px; letter-spacing: 0.06em;
+  }
+  .brand-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .brand-name { font-weight: 700; font-size: 15px; }
+  .brand-role { font-size: 11px; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  .topbar-filters { display: flex; align-items: center; gap: 10px; }
+  .filter {
+    background: var(--slate-100);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13px;
+    color: var(--slate-700);
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .filter:focus { outline: none; border-color: var(--primary-600); }
+  .topbar-user {
+    font-size: 13px; color: var(--slate-600);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logout-link { font-size: 12px; }
+
+  /* Page header */
+  .page-header {
+    max-width: 1280px; margin: 0 auto;
+    padding: 24px 24px 0;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 16px;
+  }
+  .page-header h1 {
+    margin: 0;
+    font-size: 26px; font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  .page-header .meta {
+    font-size: 13px; color: var(--slate-500);
+    margin-top: 4px;
+  }
+  .refresh-btn {
+    background: white;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-700);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    transition: background 0.12s ease;
+  }
+  .refresh-btn:hover { background: var(--slate-50); border-color: var(--primary-600); color: var(--primary-700); }
+
+  /* KPI grid */
+  .kpis {
+    max-width: 1280px; margin: 18px auto 0;
+    padding: 0 24px;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px;
+  }
+  .kpi {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: flex; flex-direction: column; gap: 6px;
+    transition: border-color 0.12s ease;
+  }
+  .kpi.warning { background: var(--warning-50); border-color: #fde68a; }
+  .kpi.danger { background: var(--danger-50); border-color: #fecaca; }
+  .kpi-label {
+    font-size: 11px; font-weight: 700;
+    color: var(--slate-500); text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .kpi.warning .kpi-label { color: #92400e; }
+  .kpi.danger .kpi-label { color: #991b1b; }
+  .kpi-value {
+    font-size: 28px; font-weight: 800;
+    color: var(--slate-900);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.01em;
+  }
+  .kpi-value.amount { font-size: 24px; }
+  .kpi.warning .kpi-value { color: #92400e; }
+  .kpi.danger .kpi-value { color: #991b1b; }
+  .kpi-sub { font-size: 12px; color: var(--slate-500); }
+  .kpi-currency { font-size: 13px; color: var(--slate-500); font-weight: 600; margin-left: 4px; }
+
+  /* Main grid */
+  .main {
+    max-width: 1280px; margin: 24px auto 48px;
+    padding: 0 24px;
+    display: grid; grid-template-columns: 2fr 1fr; gap: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-head {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--slate-200);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .card-title { font-size: 14px; font-weight: 700; color: var(--slate-900); }
+  .card-sub { font-size: 12px; color: var(--slate-500); }
+  .card-body { padding: 0; }
+
+  /* Counters table */
+  .counters table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .counters th, .counters td { padding: 12px 20px; text-align: left; border-bottom: 1px solid var(--slate-100); }
+  .counters th {
+    font-size: 11px; font-weight: 700;
+    color: var(--slate-500); text-transform: uppercase;
+    letter-spacing: 0.06em; background: var(--slate-50);
+  }
+  .counters tr:last-child td { border-bottom: none; }
+  .counters tr.clickable { cursor: pointer; transition: background 0.08s ease; }
+  .counters tr.clickable:hover { background: var(--primary-50); }
+  .counters td.amount { font-family: 'JetBrains Mono', monospace; text-align: right; font-weight: 500; }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .status-pill.open { background: var(--primary-50); color: var(--primary-700); }
+  .status-pill.closed { background: var(--slate-100); color: var(--slate-600); }
+  .status-pill.cancelled { background: var(--slate-100); color: var(--slate-500); }
+
+  .variance-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    background: var(--danger-50); color: #991b1b;
+    margin-left: 6px;
+  }
+  .variance-chip::before { content: '⚠'; }
+  .closing-chip {
+    display: inline-flex; align-items: center;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    background: var(--warning-50); color: #92400e;
+    margin-left: 6px;
+  }
+  .action-chip {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px; font-weight: 600;
+    margin-left: 6px;
+  }
+  .action-chip.approved { background: var(--success-50); color: #065f46; }
+  .action-chip.rejected { background: var(--danger-50); color: #991b1b; }
+  .action-chip.escalated { background: #fef3c7; color: #92400e; }
+
+  .empty {
+    padding: 40px 20px; text-align: center;
+    color: var(--slate-500); font-size: 14px;
+  }
+
+  /* Breakdown cards */
+  .breakdown { display: flex; flex-direction: column; gap: 24px; }
+  .breakdown-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 20px;
+    font-size: 13px;
+    border-bottom: 1px dashed var(--slate-100);
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+  .breakdown-name { color: var(--slate-700); flex: 1; }
+  .breakdown-share { color: var(--slate-400); font-size: 11px; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
+  .breakdown-amount { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--slate-900); white-space: nowrap; }
+  .breakdown-bar {
+    height: 4px; background: var(--slate-100);
+    border-radius: 999px; overflow: hidden;
+    margin: 0 20px 12px;
+  }
+  .breakdown-bar > span {
+    display: block; height: 100%;
+    background: var(--primary-600); border-radius: 999px;
+    transition: width 0.25s ease;
+  }
+
+  /* Drawer */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(2px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 40;
+  }
+  .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: min(440px, 95vw);
+    background: white;
+    box-shadow: -8px 0 24px rgba(15, 23, 42, 0.12);
+    transform: translateX(100%);
+    transition: transform 0.22s ease;
+    z-index: 50;
+    display: flex; flex-direction: column;
+  }
+  .drawer.open { transform: translateX(0); }
+  .drawer-head {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid var(--slate-200);
+    display: flex; justify-content: space-between; align-items: flex-start;
+    gap: 12px;
+  }
+  .drawer-title { font-size: 16px; font-weight: 700; margin: 0; }
+  .drawer-sub { font-size: 12px; color: var(--slate-500); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+  .drawer-close {
+    background: none; border: none; cursor: pointer;
+    font-size: 22px; line-height: 1; color: var(--slate-500);
+    padding: 4px 8px; border-radius: 6px;
+  }
+  .drawer-close:hover { background: var(--slate-100); color: var(--slate-900); }
+
+  .drawer-body {
+    flex: 1; overflow-y: auto;
+    padding: 20px 22px;
+  }
+  .drawer-section { margin-bottom: 22px; }
+  .drawer-section h3 {
+    font-size: 11px; font-weight: 700;
+    color: var(--slate-500); text-transform: uppercase;
+    letter-spacing: 0.08em; margin: 0 0 10px;
+  }
+  .drawer-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px 18px;
+    font-size: 13px;
+  }
+  .drawer-grid dt { color: var(--slate-500); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .drawer-grid dd { margin: 2px 0 0; font-weight: 500; color: var(--slate-900); font-family: 'JetBrains Mono', monospace; }
+  .drawer-block {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--slate-700);
+    white-space: pre-wrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+  .drawer-block.warning { background: var(--warning-50); border-color: #fde68a; color: #92400e; }
+
+  .drawer-foot {
+    padding: 16px 22px 22px;
+    border-top: 1px solid var(--slate-200);
+    background: var(--slate-50);
+  }
+  .drawer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .drawer-btn {
+    flex: 1; min-width: 110px;
+    padding: 10px 14px;
+    border: 1.5px solid;
+    background: white;
+    border-radius: 9px;
+    font: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    transition: background 0.12s ease, transform 0.06s ease;
+  }
+  .drawer-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .drawer-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+  .drawer-btn.approve { color: var(--success); border-color: #a7f3d0; }
+  .drawer-btn.approve:hover:not(:disabled) { background: var(--success-50); }
+  .drawer-btn.reject { color: var(--danger); border-color: #fecaca; }
+  .drawer-btn.reject:hover:not(:disabled) { background: var(--danger-50); }
+  .drawer-btn.escalate { color: #92400e; border-color: #fde68a; }
+  .drawer-btn.escalate:hover:not(:disabled) { background: var(--warning-50); }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--slate-900);
+    color: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-size: 13px; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.2);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 80;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--success); }
+  .toast.error { background: var(--danger); }
+
+  @media (max-width: 1000px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .main { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .kpis { grid-template-columns: 1fr; }
+    .counters th:nth-child(2), .counters td:nth-child(2) { display: none; }
+    .counters th:nth-child(4), .counters td:nth-child(4) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flag-bar"><span class="black"></span><span class="yellow"></span><span class="red"></span></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">
+      <div class="brand-logo">SR</div>
+      <div class="brand-text">
+        <span class="brand-name">Sente Rails</span>
+        <span class="brand-role">Supervisor</span>
+      </div>
+    </a>
+
+    <div class="topbar-filters">
+      <select id="mda-filter" class="filter" title="MDA">
+        {% for m in mda_options %}
+          <option value="{{ m.short_code }}" {% if m.short_code == payload.mda %}selected{% endif %}>{{ m.short_code }} — {{ m.full_name }}</option>
+        {% endfor %}
+      </select>
+      <input id="date-filter" class="filter" type="date" value="{{ payload.date }}" title="Date">
+    </div>
+
+    <div class="topbar-user">
+      <span>{{ user }}</span>
+      <a class="logout-link" href="/api/method/logout">Sign out</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-header">
+  <div>
+    <h1 id="page-title">{{ payload.mda_name or "Select an MDA" }}</h1>
+    <div class="meta" id="page-meta">
+      {% if payload.is_today %}Today · {{ payload.date }}{% else %}{{ payload.date }}{% endif %}
+      · {{ payload.totals.shift_count }} shifts
+    </div>
+  </div>
+  <button class="refresh-btn" id="refresh-btn">Refresh</button>
+</div>
+
+<section class="kpis" id="kpis">
+  <div class="kpi">
+    <div class="kpi-label">Total collected</div>
+    <div class="kpi-value amount" id="kpi-total">{{ "{:,.0f}".format(payload.totals.total_collected) }}<span class="kpi-currency">UGX</span></div>
+    <div class="kpi-sub">Across all counters</div>
+  </div>
+  <div class="kpi {% if payload.totals.open_shifts %}warning{% endif %}" id="kpi-open-tile">
+    <div class="kpi-label">Open shifts</div>
+    <div class="kpi-value" id="kpi-open">{{ payload.totals.open_shifts }}</div>
+    <div class="kpi-sub">Counters on the floor</div>
+  </div>
+  <div class="kpi {% if payload.totals.closing_now %}warning{% endif %}" id="kpi-closing-tile">
+    <div class="kpi-label">Closing now</div>
+    <div class="kpi-value" id="kpi-closing">{{ payload.totals.closing_now }}</div>
+    <div class="kpi-sub">Cash counted, awaiting sign-off</div>
+  </div>
+  <div class="kpi {% if payload.totals.variance_shifts %}danger{% endif %}" id="kpi-variance-tile">
+    <div class="kpi-label">Variances</div>
+    <div class="kpi-value" id="kpi-variance">{{ payload.totals.variance_shifts }}</div>
+    <div class="kpi-sub">|cash counted − expected| ≥ 1</div>
+  </div>
+</section>
+
+<main class="main">
+
+  <section class="card counters">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Active counters</div>
+        <div class="card-sub">Click a row to drill into the shift detail</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <table>
+        <thead>
+          <tr>
+            <th>Counter</th>
+            <th>Clerk</th>
+            <th>Status</th>
+            <th>Duration</th>
+            <th>Txns</th>
+            <th style="text-align:right;">Total</th>
+            <th style="text-align:right;">Variance</th>
+          </tr>
+        </thead>
+        <tbody id="counter-rows">
+          {% if payload.shifts %}
+            {% for s in payload.shifts %}
+              <tr class="clickable" data-shift='{{ s | tojson }}'>
+                <td>{{ s.counter_label }}</td>
+                <td>{{ s.clerk_name }}</td>
+                <td>
+                  <span class="status-pill {{ s.status | lower }}">{{ s.status }}</span>
+                  {% if s.variance_flag %}<span class="variance-chip">variance</span>{% endif %}
+                  {% if s.closing_now %}<span class="closing-chip">closing</span>{% endif %}
+                  {% if s.last_action %}<span class="action-chip {{ s.last_action }}">{{ s.last_action }}</span>{% endif %}
+                </td>
+                <td>{{ (s.duration_minutes // 60) }}h {{ s.duration_minutes % 60 }}m</td>
+                <td>{{ s.transactions }}</td>
+                <td class="amount">{{ "{:,.0f}".format(s.total_collected) }}</td>
+                <td class="amount" style="color: {% if s.cash_variance < 0 %}var(--danger){% elif s.cash_variance > 0 %}var(--warning){% else %}var(--slate-500){% endif %};">
+                  {% if s.cash_variance %}{{ "{:+,.0f}".format(s.cash_variance) }}{% else %}—{% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr><td colspan="7" class="empty">No shifts opened on this day for this MDA.</td></tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <aside class="breakdown">
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">By service</div>
+        <div class="card-sub">{{ payload.by_service | length }} line(s)</div>
+      </div>
+      <div class="card-body" id="by-service">
+        {% if payload.by_service %}
+          {% for row in payload.by_service %}
+            <div class="breakdown-row">
+              <div class="breakdown-name">{{ row.service_name }}</div>
+              <div class="breakdown-amount">{{ "{:,.0f}".format(row.total) }}</div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="empty">No assessments paid today.</div>
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">By channel</div>
+        <div class="card-sub">Settled to aggregator</div>
+      </div>
+      <div class="card-body" id="by-channel">
+        {% for row in payload.by_channel %}
+          <div class="breakdown-row">
+            <div class="breakdown-name">{{ row.channel }} <span class="breakdown-share">{{ row.share_pct }}%</span></div>
+            <div class="breakdown-amount">{{ "{:,.0f}".format(row.total) }}</div>
+          </div>
+          <div class="breakdown-bar"><span style="width: {{ row.share_pct }}%"></span></div>
+        {% endfor %}
+      </div>
+    </section>
+  </aside>
+
+</main>
+
+<!-- Drawer -->
+<div class="drawer-backdrop" id="drawer-backdrop"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="drawer-head">
+    <div>
+      <h2 class="drawer-title" id="drawer-title">Shift detail</h2>
+      <div class="drawer-sub" id="drawer-sub"></div>
+    </div>
+    <button class="drawer-close" id="drawer-close" aria-label="Close">×</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot">
+    <div class="drawer-actions">
+      <button class="drawer-btn approve" id="btn-approve">Approve</button>
+      <button class="drawer-btn reject" id="btn-reject">Reject</button>
+      <button class="drawer-btn escalate" id="btn-escalate">Escalate</button>
+    </div>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function() {
+  const CSRF = {{ csrf_token | tojson }};
+  let currentMda = {{ payload.mda | tojson }};
+  let currentDate = {{ payload.date | tojson }};
+  let currentShift = null;
+
+  // ─────── Filters: MDA + date ───────
+  const mdaFilter = document.getElementById('mda-filter');
+  const dateFilter = document.getElementById('date-filter');
+  const refreshBtn = document.getElementById('refresh-btn');
+
+  function reload() {
+    const u = new URL(window.location.href);
+    u.searchParams.set('mda', mdaFilter.value);
+    u.searchParams.set('date', dateFilter.value);
+    window.location.href = u.toString();
+  }
+  mdaFilter.addEventListener('change', reload);
+  dateFilter.addEventListener('change', reload);
+  refreshBtn.addEventListener('click', () => window.location.reload());
+
+  // ─────── Drawer open / close ───────
+  const backdrop = document.getElementById('drawer-backdrop');
+  const drawer = document.getElementById('drawer');
+  const drawerTitle = document.getElementById('drawer-title');
+  const drawerSub = document.getElementById('drawer-sub');
+  const drawerBody = document.getElementById('drawer-body');
+  const drawerClose = document.getElementById('drawer-close');
+
+  function openDrawer() {
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    drawer.setAttribute('aria-hidden', 'false');
+  }
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    drawer.setAttribute('aria-hidden', 'true');
+    currentShift = null;
+  }
+  drawerClose.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+  function formatAmount(n) {
+    if (n === null || n === undefined) return '—';
+    return Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+  function formatVariance(n) {
+    if (!n) return '0';
+    const sign = n > 0 ? '+' : '';
+    return sign + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0 });
+  }
+
+  document.querySelectorAll('#counter-rows tr.clickable').forEach(tr => {
+    tr.addEventListener('click', () => {
+      let s;
+      try { s = JSON.parse(tr.dataset.shift); }
+      catch (e) { return; }
+      currentShift = s;
+      drawerTitle.textContent = (s.counter_label || '—') + ' · ' + s.clerk_name;
+      drawerSub.textContent = s.name + ' · ' + s.status;
+      drawerBody.innerHTML = renderShiftDetail(s);
+      updateActionButtons(s);
+      openDrawer();
+    });
+  });
+
+  function renderShiftDetail(s) {
+    const parts = [];
+    parts.push('<div class="drawer-section"><h3>Summary</h3><dl class="drawer-grid">');
+    parts.push('<div><dt>Opened</dt><dd>' + (s.opened_at ? s.opened_at.replace('T', ' ').slice(0, 16) : '—') + '</dd></div>');
+    parts.push('<div><dt>Closed</dt><dd>' + (s.closed_at ? s.closed_at.replace('T', ' ').slice(0, 16) : '—') + '</dd></div>');
+    parts.push('<div><dt>Duration</dt><dd>' + Math.floor(s.duration_minutes / 60) + 'h ' + (s.duration_minutes % 60) + 'm</dd></div>');
+    parts.push('<div><dt>Transactions</dt><dd>' + s.transactions + '</dd></div>');
+    parts.push('<div><dt>Total collected</dt><dd>' + formatAmount(s.total_collected) + '</dd></div>');
+    parts.push('</dl></div>');
+
+    parts.push('<div class="drawer-section"><h3>Cash reconciliation</h3><dl class="drawer-grid">');
+    parts.push('<div><dt>Cash counted</dt><dd>' + formatAmount(s.cash_counted) + '</dd></div>');
+    parts.push('<div><dt>Cash expected</dt><dd>' + formatAmount(s.cash_expected) + '</dd></div>');
+    parts.push('<div><dt>Variance</dt><dd style="color:' + (s.cash_variance < 0 ? 'var(--danger)' : (s.cash_variance > 0 ? 'var(--warning)' : 'var(--slate-700)')) + ';">' + formatVariance(s.cash_variance) + '</dd></div>');
+    parts.push('<div><dt>Flagged</dt><dd>' + (s.variance_flag ? 'YES' : 'no') + '</dd></div>');
+    parts.push('</dl></div>');
+
+    if (s.variance_reason) {
+      parts.push('<div class="drawer-section"><h3>Variance reason (from clerk)</h3>');
+      parts.push('<div class="drawer-block warning">' + escapeHtml(s.variance_reason) + '</div></div>');
+    }
+    if (s.closing_notes) {
+      parts.push('<div class="drawer-section"><h3>Audit trail</h3>');
+      parts.push('<div class="drawer-block">' + escapeHtml(s.closing_notes) + '</div></div>');
+    }
+    return parts.join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function updateActionButtons(s) {
+    const hasVariance = !!s.variance_flag;
+    const isOpen = s.status === 'Open';
+    document.getElementById('btn-approve').disabled = !hasVariance || isOpen;
+    document.getElementById('btn-reject').disabled = isOpen;
+    document.getElementById('btn-escalate').disabled = !hasVariance || isOpen;
+  }
+
+  // ─────── Variance actions ───────
+  async function postAction(action, note) {
+    if (!currentShift) return;
+    const url = '/v1/supervisor/shifts/' + encodeURIComponent(currentShift.name) + ':' + action;
+    try {
+      const resp = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Frappe-CSRF-Token': CSRF,  /* AUDIT-OK: framework wire-format CSRF header name */
+          'X-Requested-With': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({ note: note || '' }),
+        credentials: 'same-origin',
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        toast((data && data.error && data.error.message) || ('Action failed (' + resp.status + ')'), 'error');
+        return;
+      }
+      toast('Variance ' + (data.data && data.data.action ? data.data.action : action.replace('-variance', '')) + ' · audit recorded', 'success');
+      setTimeout(() => window.location.reload(), 700);
+    } catch (e) {
+      toast('Network error — please try again', 'error');
+    }
+  }
+
+  document.getElementById('btn-approve').addEventListener('click', () => {
+    if (!confirm('Approve the variance reason on this shift? This stamps the audit chain.')) return;
+    const note = prompt('Optional approval note:') || '';
+    postAction('approve-variance', note);
+  });
+  document.getElementById('btn-reject').addEventListener('click', () => {
+    const note = prompt('Rejection reason (required — sent back to the clerk):');
+    if (!note || !note.trim()) return;
+    postAction('reject-variance', note.trim());
+  });
+  document.getElementById('btn-escalate').addEventListener('click', () => {
+    const note = prompt('Escalation note (required — raises to Treasurer):');
+    if (!note || !note.trim()) return;
+    postAction('escalate-variance', note.trim());
+  });
+
+  // ─────── Toast ───────
+  const toastEl = document.getElementById('toast');
+  let toastTimer;
+  function toast(msg, kind) {
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (kind || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toastEl.classList.remove('show'); }, 3200);
+  }
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!--
+─────────────────────────────────────────────────────────────────────────────
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+
+CONFIDENTIAL AND PROPRIETARY
+
+This source file is the original work of Geoffrey Oketwangwu and contains
+confidential, proprietary information protected under copyright and trade-
+secret law. No part may be reproduced, distributed, modified, reverse-
+engineered, or used — in source or compiled form — without the prior
+written permission of the author.
+
+All rights reserved.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title }}</title>
+<meta name="description" content="Sente Rails — Apache-2.0 government revenue collection rail for Uganda. Counter-level system of record + orchestration layer for MDAs and Local Governments.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary-900: #1e3a8a;
+    --primary-700: #1d4ed8;
+    --primary-600: #2563eb;
+    --primary-50:  #eff6ff;
+    --slate-900: #0f172a;
+    --slate-700: #334155;
+    --slate-600: #475569;
+    --slate-500: #64748b;
+    --slate-300: #cbd5e1;
+    --slate-200: #e2e8f0;
+    --slate-100: #f1f5f9;
+    --slate-50:  #f8fafc;
+    --accent: #f59e0b;
+    --success: #059669;
+    --flag-yellow: #FCDC04;
+    --flag-red: #D90000;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--slate-900);
+    background: white;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--primary-600); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* Flag accent bar */
+  .flag-bar { height: 4px; display: flex; }
+  .flag-bar > span { flex: 1; }
+  .flag-bar .black { background: #000; }
+  .flag-bar .yellow { background: var(--flag-yellow); }
+  .flag-bar .red { background: var(--flag-red); }
+
+  /* Top navigation */
+  .nav {
+    max-width: 1200px; margin: 0 auto;
+    padding: 20px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 12px; }
+  .nav-logo {
+    width: 38px; height: 38px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--primary-900) 0%, var(--primary-600) 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; letter-spacing: 0.06em;
+  }
+  .nav-name { font-weight: 700; font-size: 17px; }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: 14px; font-weight: 500; }
+  .nav-links a { color: var(--slate-700); }
+  .nav-links a:hover { color: var(--primary-700); text-decoration: none; }
+  .nav-cta {
+    background: var(--primary-700); color: white !important;
+    padding: 8px 14px; border-radius: 8px;
+    font-weight: 500;
+  }
+  .nav-cta:hover { background: var(--primary-900); text-decoration: none !important; }
+
+  /* Hero */
+  .hero {
+    max-width: 1200px; margin: 0 auto;
+    padding: 48px 24px 64px;
+    display: grid; grid-template-columns: 1.3fr 1fr; gap: 56px;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--primary-50); color: var(--primary-700);
+    padding: 6px 12px; border-radius: 999px;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 20px;
+  }
+  .hero-eyebrow::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--success); border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18);
+  }
+  .hero h1 {
+    margin: 0 0 18px;
+    font-size: 48px; font-weight: 800; line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .hero p.lede {
+    margin: 0 0 28px;
+    font-size: 18px; color: var(--slate-600); line-height: 1.55;
+    max-width: 560px;
+  }
+  .hero-bullets {
+    list-style: none; padding: 0; margin: 0 0 32px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px;
+    max-width: 560px;
+  }
+  .hero-bullets li {
+    font-size: 14px; color: var(--slate-700);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .hero-bullets li::before {
+    content: ''; flex: none; width: 18px; height: 18px;
+    margin-top: 2px; border-radius: 50%;
+    background: var(--primary-50);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%231d4ed8'%3E%3Cpath fill-rule='evenodd' d='M16.704 5.29a1 1 0 010 1.42l-7.5 7.5a1 1 0 01-1.42 0l-3.5-3.5a1 1 0 111.42-1.42l2.79 2.79 6.79-6.79a1 1 0 011.42 0z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-size: 14px; background-repeat: no-repeat; background-position: center;
+  }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; border-radius: 10px;
+    font-size: 15px; font-weight: 600;
+    transition: transform 0.06s ease;
+  }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn-primary {
+    background: var(--primary-700); color: white !important;
+    box-shadow: 0 4px 14px rgba(29, 78, 216, 0.25);
+  }
+  .btn-primary:hover { background: var(--primary-900); }
+  .btn-secondary {
+    background: white; color: var(--primary-700) !important;
+    border: 1.5px solid var(--slate-200);
+  }
+  .btn-secondary:hover { border-color: var(--primary-700); }
+
+  /* Hero right — status card */
+  .status-card {
+    background: linear-gradient(180deg, var(--slate-50) 0%, white 100%);
+    border: 1px solid var(--slate-200);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+  }
+  .status-title {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--slate-500); margin: 0 0 14px;
+  }
+  .status-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px dashed var(--slate-200);
+    font-size: 13px;
+  }
+  .status-row:last-of-type { border-bottom: none; }
+  .status-label { color: var(--slate-600); display: flex; align-items: center; gap: 8px; }
+  .status-label .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18);
+  }
+  .status-label .dot.stub { background: var(--accent); box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18); }
+  .status-value { font-family: 'JetBrains Mono', monospace; color: var(--slate-900); font-size: 12px; }
+  .status-kind {
+    display: inline-block; background: var(--slate-100);
+    color: var(--slate-600); padding: 2px 8px;
+    border-radius: 4px; font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-right: 8px; font-weight: 600;
+  }
+  .status-cta {
+    margin-top: 14px;
+    font-size: 12px; color: var(--slate-500);
+    display: flex; justify-content: space-between;
+  }
+  .status-cta a { font-family: 'JetBrains Mono', monospace; }
+
+  /* Pillars section */
+  .pillars {
+    background: var(--slate-50);
+    border-top: 1px solid var(--slate-200);
+    border-bottom: 1px solid var(--slate-200);
+    padding: 64px 24px;
+  }
+  .pillars-inner { max-width: 1200px; margin: 0 auto; }
+  .section-eyebrow {
+    text-align: center;
+    font-size: 12px; font-weight: 700;
+    color: var(--primary-700);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .section-title {
+    text-align: center;
+    font-size: 30px; font-weight: 700;
+    margin: 0 auto 44px;
+    max-width: 700px;
+    letter-spacing: -0.01em;
+  }
+  .pillar-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .pillar {
+    background: white; border: 1px solid var(--slate-200);
+    border-radius: 14px; padding: 28px;
+  }
+  .pillar-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--primary-50); color: var(--primary-700);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; font-size: 22px;
+  }
+  .pillar h3 {
+    margin: 0 0 8px;
+    font-size: 18px; font-weight: 700; color: var(--slate-900);
+  }
+  .pillar p {
+    margin: 0;
+    font-size: 14px; color: var(--slate-600); line-height: 1.55;
+  }
+
+  /* Verticals */
+  .verticals { padding: 72px 24px; }
+  .verticals-inner { max-width: 1200px; margin: 0 auto; }
+  .vert-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+  }
+  .vert {
+    background: white; border: 1px solid var(--slate-200);
+    border-radius: 14px; padding: 28px;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    display: flex; flex-direction: column;
+  }
+  .vert:hover {
+    border-color: var(--primary-600);
+    box-shadow: 0 8px 24px rgba(29, 78, 216, 0.08);
+  }
+  .vert-tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 700;
+    color: var(--primary-700); background: var(--primary-50);
+    padding: 4px 10px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 14px; align-self: flex-start;
+  }
+  .vert h3 {
+    margin: 0 0 6px;
+    font-size: 20px; font-weight: 700;
+  }
+  .vert .mda { font-size: 13px; color: var(--slate-500); margin-bottom: 14px; }
+  .vert p { margin: 0 0 18px; font-size: 14px; color: var(--slate-600); line-height: 1.55; flex: 1; }
+  .vert-cta { font-size: 14px; font-weight: 600; }
+  .vert-cta::after { content: ' →'; transition: margin-left 0.12s ease; display: inline-block; }
+  .vert:hover .vert-cta::after { margin-left: 4px; }
+
+  /* Footer */
+  footer {
+    background: var(--slate-900); color: var(--slate-300);
+    padding: 40px 24px;
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .footer-brand { display: flex; align-items: center; gap: 12px; }
+  .footer-brand .nav-logo { background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-900) 100%); }
+  .footer-brand strong { color: white; font-size: 15px; }
+  .footer-brand div { font-size: 12px; color: var(--slate-500); }
+  .footer-links { display: flex; gap: 20px; font-size: 13px; }
+  .footer-links a { color: var(--slate-300); }
+  .footer-links a:hover { color: white; text-decoration: none; }
+  .footer-meta { font-size: 12px; color: var(--slate-500); font-family: 'JetBrains Mono', monospace; }
+
+  /* Mobile */
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; padding: 32px 20px 48px; }
+    .hero h1 { font-size: 36px; }
+    .hero-bullets { grid-template-columns: 1fr; }
+    .pillar-grid, .vert-grid { grid-template-columns: 1fr; }
+    .nav-links { gap: 14px; font-size: 13px; }
+    .footer-inner { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="flag-bar"><span class="black"></span><span class="yellow"></span><span class="red"></span></div>
+
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-logo">SR</div>
+    <div class="nav-name">Sente Rails</div>
+  </div>
+  <div class="nav-links">
+    <a href="/docs">API Docs</a>
+    <a href="https://github.com/asatlabs/sente-rails" target="_blank" rel="noopener">GitHub</a>
+    <a href="/clerk" class="nav-cta">Open Clerk Demo →</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="hero-eyebrow">Live sandbox · v{{ spec_version }}</div>
+    <h1>Government revenue, on rails.</h1>
+    <p class="lede">
+      Sente Rails is a sovereign-hostable revenue collection and orchestration
+      rail for Uganda — counter-level system of record for MDAs and Local
+      Governments that lack one, and an API-first orchestration layer for
+      those that already have their own systems.
+    </p>
+    <ul class="hero-bullets">
+      <li>Apache 2.0 — sovereign-hostable, NITA-U-aligned</li>
+      <li>Live MTN MoMo sandbox wired end-to-end</li>
+      <li>{{ endpoint_count }}-endpoint <code style="font-family:'JetBrains Mono',monospace;background:var(--slate-100);padding:1px 5px;border-radius:3px;font-size:12px;">/v1</code> API · OpenAPI 3.1 + Postman</li>
+      <li>Built in Gulu by ASAT LABS · Apache 2.0</li>
+    </ul>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/clerk">Open Clerk Demo</a>
+      <a class="btn btn-secondary" href="/docs">Read API Docs</a>
+    </div>
+  </div>
+
+  <aside class="status-card">
+    <p class="status-title">Live integrations · UG profile</p>
+    {% if integrations %}
+      {% for row in integrations %}
+        <div class="status-row">
+          <span class="status-label">
+            <span class="dot{% if not row.live %} stub{% endif %}"></span>
+            <span><span class="status-kind">{{ row.kind }}</span>{{ row.label }}</span>
+          </span>
+          <span class="status-value">{% if row.live %}live{% else %}stub{% endif %}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="status-row">
+        <span class="status-label"><span class="dot stub"></span>Adapter registry not yet seeded</span>
+      </div>
+    {% endif %}
+    <div class="status-cta">
+      <span>Probe live: </span>
+      <a href="/api/method/sente_rails.api.v1.integrations.list_integrations" target="_blank">/v1/integrations →</a>
+    </div>
+  </aside>
+</section>
+
+<section class="pillars">
+  <div class="pillars-inner">
+    <div class="section-eyebrow">What it stands for</div>
+    <h2 class="section-title">Sovereign by design. Composable by default.</h2>
+    <div class="pillar-grid">
+      <div class="pillar">
+        <div class="pillar-icon">⚖️</div>
+        <h3>Sovereignty</h3>
+        <p>Apache 2.0, source-available, deployable on Ugandan-owned infrastructure. No vendor lock, no offshore data residency, no royalty meter. The Ministry of ICT can fork it tomorrow.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">🔌</div>
+        <h3>Composability</h3>
+        <p>Public REST <code style="font-family:'JetBrains Mono',monospace;background:var(--slate-100);padding:1px 4px;border-radius:3px;font-size:12px;">/v1</code> surface. UGHub-ready integration adapters per MDA. Every payment route, every identity provider, every fiscal endpoint is a swappable adapter — not a fork.</p>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">⚡</div>
+        <h3>Velocity</h3>
+        <p>14 days from MoU to a live counter. Three verticals already modelled (Gulu City trading licence, Lands title transfer, URSB business registration). A new MDA is a Country Profile entry and a service catalog row, not a six-month rebuild.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="verticals">
+  <div class="verticals-inner">
+    <div class="section-eyebrow">Three demo verticals</div>
+    <h2 class="section-title">The same rail, three government workflows.</h2>
+    <div class="vert-grid">
+      <a class="vert" href="/clerk?mda=GULU">
+        <span class="vert-tag">Local Government</span>
+        <h3>Trading Licence</h3>
+        <div class="mda">Gulu City · MDA mode A</div>
+        <p>Citizen renews a trading licence at the City Hall counter. NIRA identity lookup, fee assessment, MTN MoMo payment, fiscal receipt — under 90 seconds.</p>
+        <span class="vert-cta">Try the demo</span>
+      </a>
+      <a class="vert" href="/clerk?mda=MOL">
+        <span class="vert-tag">Central Government</span>
+        <h3>Title Transfer</h3>
+        <div class="mda">Ministry of Lands · MDA mode B</div>
+        <p>Multi-MDA assessment: stamp duty (URA) + registration fee (MoL) on one Payment Intent, split at the aggregator under PFMA §43. One receipt, two ledgers.</p>
+        <span class="vert-cta">Try the demo</span>
+      </a>
+      <a class="vert" href="/clerk?mda=URSB">
+        <span class="vert-tag">Business Registry</span>
+        <h3>Business Registration</h3>
+        <div class="mda">URSB · MDA mode A</div>
+        <p>Founder registers a new entity. Service catalog → assessment → MoMo → EFRIS fiscal receipt → entity reference returned. Designed for one-stop counters and self-service portals alike.</p>
+        <span class="vert-cta">Try the demo</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo">SR</div>
+      <div>
+        <strong>Sente Rails</strong>
+        <div>Built in Gulu by ASAT LABS · Apache 2.0</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="/docs">API Docs</a>
+      <a href="/clerk">Clerk Demo</a>
+      <a href="https://github.com/asatlabs/sente-rails" target="_blank" rel="noopener">GitHub</a>
+      <a href="mailto:hello@asatlabs.org">Contact</a>
+    </div>
+    <div class="footer-meta">v{{ spec_version }} · {{ endpoint_count }} endpoints · {{ schema_count }} schemas</div>
+  </div>
+</footer>
+
+</body>
+</html>

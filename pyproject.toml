@@ -1,0 +1,76 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+# Author:  Geoffrey Oketwangwu <geoffreyoketwangwu@gmail.com>
+#
+# CONFIDENTIAL AND PROPRIETARY
+#
+# This source file is the original work of Geoffrey Oketwangwu and contains
+# confidential, proprietary information protected under copyright and trade-
+# secret law. No part may be reproduced, distributed, modified, reverse-
+# engineered, or used — in source or compiled form — without the prior
+# written permission of the author.
+#
+# All rights reserved.
+[project]
+name = "sente_rails"
+authors = [
+    { name = "Geoffrey Oketwangwu", email = "geoffreyoketwangwu@gmail.com"}
+]
+description = "API and operations console for Uganda's government revenue rail."
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    # "frappe~=15.0.0" # Installed and managed by bench.
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+# These dependencies are only installed when developer mode is enabled
+[tool.bench.dev-dependencies]
+# package_name = "~=1.1.0"
+
+# Apt dependencies for hosted deployments.
+[deploy.dependencies.apt]
+packages = []
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+    "UP",
+    "B",
+    "RUF",
+]
+ignore = [
+    "B017", # assertRaises(Exception) - should be more specific
+    "B018", # useless expression, not assigned to anything
+    "B023", # function doesn't bind loop variable - will have last iteration's value
+    "B904", # raise inside except without from
+    "E101", # indentation contains mixed spaces and tabs
+    "E402", # module level import not at top of file
+    "E501", # line too long
+    "E741", # ambiguous variable name
+    "F401", # "unused" imports
+    "F403", # can't detect undefined names from * import
+    "F405", # can't detect undefined names from * import
+    "F722", # syntax error in forward type annotation
+    "W191", # indentation contains tabs
+    "RUF001", # ambiguous string char (σ, − used intentionally in stats / formulas)
+    "RUF002", # ambiguous docstring char (en-dash used as typographic dash)
+    "RUF003", # ambiguous comment char (Greek letters used in stat notation)
+]
+typing-modules = ["frappe.types.DF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "tab"
+docstring-code-format = true

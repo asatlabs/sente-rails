@@ -1,0 +1,25 @@
+Copyright (c) 2026 Geoffrey Oketwangwu (asatlabs.org)
+All rights reserved.
+
+CONFIDENTIAL AND PROPRIETARY
+
+Sente Rails, together with all associated source code, documentation, designs,
+schemas, and materials in this repository (the "Software"), is the original
+work of Geoffrey Oketwangwu and contains confidential and proprietary
+information protected under copyright and trade-secret law.
+
+No part of the Software may be reproduced, distributed, published, displayed,
+modified, adapted, reverse-engineered, decompiled, or used — in source or
+compiled form, in whole or in part — by any person or entity without the
+prior written permission of the author.
+
+Any access granted to authorised government reviewers or observers is for the
+sole purpose of evaluation and oversight. Such access is strictly read-only
+and confers no licence or right to use, copy, distribute, or create derivative
+works from the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY CLAIM, DAMAGES, OR
+OTHER LIABILITY ARISING FROM OR IN CONNECTION WITH THE SOFTWARE.
+
+All rights reserved.

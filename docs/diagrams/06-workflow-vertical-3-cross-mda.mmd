@@ -1,0 +1,59 @@
+%% Sente Rails - Figure 6: Vertical 3 workflow - Cross-MDA business registration
+%% Reference workflow 3 — cross-MDA business registration
+%% "30 minutes from idea to formalised business" - clock visible on screen
+%% Render: mmdc -i 06-workflow-vertical-3-cross-mda.mmd -o 06-workflow-vertical-3-cross-mda.svg -b transparent
+
+sequenceDiagram
+  autonumber
+  actor Clerk as Counter Clerk<br/>(URSB / one-stop kiosk)
+  participant Rail as Sente Rails<br/>/clerk + /v1
+  participant MoMo as MTN MoMo<br/>(sandbox)
+  participant URSB as URSB<br/>(Mode A surface)
+  participant URA as URA<br/>(Mode B surface)
+  participant Gulu as Gulu City Authority<br/>(Mode A surface)
+  actor Citizen as Mukasa J. P.<br/>(prospective director)
+  participant Supervisor as Supervisor screen<br/>(projected, optional)
+
+  Note over Clerk,Citizen: Stage clock starts<br/>target: under 30 minutes end-to-end
+
+  Clerk->>Rail: Search NIN CM78001234ABCD
+  Rail-->>Clerk: Mukasa - verified
+
+  Note over Clerk,Rail: Build cross-MDA cart
+  Clerk->>Rail: Add NAME-RESERVE (URSB - 50,000)
+  Clerk->>Rail: Add COMPANY-REG (URSB - 250,000)
+  Clerk->>Rail: Add TIN-REG (URA - 0)
+  Clerk->>Rail: Add TL-NEW (Gulu - 50,000)
+
+  Rail-->>Clerk: Cross-MDA banner<br/>3 MDAs - 4 lines - 350,000 UGX
+
+  Clerk->>Rail: Assess
+  Rail->>Rail: FDN per efris_taxable line
+  Rail-->>Clerk: Single assessment - 4 FDNs attached
+
+  Clerk->>Rail: Pay via MoMo (single request)
+  Rail->>MoMo: requestToPay 350,000 UGX
+  MoMo-->>Citizen: USSD prompt
+  Citizen-->>MoMo: PIN + approve
+
+  MoMo-->>Rail: Webhook - SUCCESSFUL
+  Rail->>MoMo: Split disbursement<br/>URSB: 300,000 - URA: 0 - Gulu: 50,000
+
+  par Cross-MDA propagation in parallel
+    Rail->>URSB: Webhook - issue Name + Company registration
+    URSB-->>Rail: certificate refs - back-stamped on the assessment
+  and
+    Rail->>URA: Webhook - issue TIN
+    URA-->>Rail: TIN number - back-stamped
+  and
+    Rail->>Gulu: Webhook - issue new trading licence
+    Gulu-->>Rail: licence ref - back-stamped
+  end
+
+  Rail-->>Clerk: 3 receipts - one transaction - one citizen interaction
+
+  opt Supervisor projection
+    Rail->>Supervisor: Live shift tile updates<br/>(GULU + URSB + URA registers tick)
+  end
+
+  Note over Clerk,Citizen: Elapsed time<br/>contrast with current state (multi-day, multi-office)
